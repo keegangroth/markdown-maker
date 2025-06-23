@@ -3,7 +3,11 @@ GitHub Copilot Instructions for This Python Project
 This document provides instructions and guidelines for GitHub Copilot to ensure its contributions are consistent, high-quality, and align with our project's standards.
 Core Principles
 
-    Minimal Changes: When refactoring or adding new code, make the smallest, most focused changes possible. Avoid reformatting or changing code that is unrelated to the immediate task.
+    Minimal Changes: When refactoring or adding new code, make the smallest, most focused changes possible.
+    Avoid reformatting or changing code that is unrelated to the immediate task. Make code precise, modular, and testable.
+    Don’t break existing functionality.
+
+    Ask Coder: If I need to do anything (e.g. Supabase/AWS config), tell me clearly. If anything is unclear, ask for clarification before starting.
 
     Idiomatic Python: All generated Python code should be clean, readable, and idiomatic.
 
