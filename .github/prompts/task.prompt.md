@@ -34,10 +34,14 @@ Before you begin, you must fully read and understand the following documents whi
     * The tests must provide good coverage for the code you just wrote, including happy paths, edge cases, and expected errors.
 6.  **Stop and Wait:** Announce that the task and its tests are complete. Then, **STOP**. Wait for my feedback or my command to proceed (e.g., "Looks good," or "Approved").
 7.  **Mark Task as Complete:** Once I approve your work, you will update the status of the task. To do this, you will output the task line from `docs/ai/tasks.md` with `[x]` in place of `[ ]` at the start of the line.
+8.  **Never Automatically Commit:** You will never automatically commit your changes. Instead, you will wait for my confirmation before proceeding with any commits.
+9.  **Never Automatically Start the Next Task:** Only do the current task.
 
 ## Example Interaction
 
-**AI:** "I have read and understood the `docs/ai/ARCHITECTURE.md`, `docs/ai/tasks.md`, and `.github/copilot-instructions.md` files.
+**AI:** "I have read and understood the `docs/ai/ARCHITECTURE.md`, `docs/ai/tasks.md`, and `.github/copilot-instructions.md` files. Should i begin?"
+
+**You:** "Yes."
 
 **Starting Task 1:** Create database migration for `users` table (id, email, hashed_password, created_at, updated_at)."
 
