@@ -13,9 +13,9 @@ This document outlines the step-by-step tasks required to build the MVP of the "
     - `config/`
 - [x] 1.2. Create empty `__init__.py` files in all `src` subdirectories to make them Python packages.
 - [x] 1.3. Create the main entry point file `src/markdown_maker/main.py`.
-- [ ] 1.4. Create a `pyproject.toml` file to define project metadata and dependencies (`click`, `requests`, `PyYAML`, `beautifulsoup4`, `markdownify`, `pytest`, `pytest-mock`, `ruff`).
-- [ ] 1.6. Create a `.gitignore` file and add `__pycache__/`, `.pytest_cache/`, `*.egg-info/`, `dist/`, `build/`, and importantly, `.secrets.yml`.
-- [ ] 1.7. Create a basic `README.md` with a project title and a brief description.
+- [x] 1.4. Create a `pyproject.toml` file to define project metadata and dependencies (`click`, `requests`, `PyYAML`, `beautifulsoup4`, `markdownify`, `pytest`, `pytest-mock`, `ruff`).
+- [x] 1.6. Create a `.gitignore` file and add `__pycache__/`, `.pytest_cache/`, `*.egg-info/`, `dist/`, `build/`, and importantly, `.secrets.yml`.
+- [x] 1.7. Create a basic `README.md` with a project title and a brief description. Add a section for setup instructions.
 
 ## Phase 2: Configuration Management
 

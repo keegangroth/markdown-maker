@@ -1,0 +1,19 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# pytest
+.pytest_cache/
+
+# Setuptools
+*.egg-info/
+dist/
+build/
+
+# Secrets
+config/.secrets.yml
+
+# Copilot stuff
+COMMIT_EDITMSG
