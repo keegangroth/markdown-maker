@@ -4,15 +4,15 @@ This document outlines the step-by-step tasks required to build the MVP of the "
 
 ## Phase 1: Project Setup & Foundation
 
-- [ ] 1.1. Create the initial directory structure as defined in `ARCHITECTURE.md`.
+- [x] 1.1. Create the initial directory structure as defined in `ARCHITECTURE.md`.
     - `src/markdown_maker/`
     - `src/markdown_maker/clients/`
     - `src/markdown_maker/converters/`
     - `src/markdown_maker/utils/`
     - `tests/`
     - `config/`
-- [ ] 1.2. Create empty `__init__.py` files in all `src` subdirectories to make them Python packages.
-- [ ] 1.3. Create the main entry point file `src/markdown_maker/main.py`.
+- [x] 1.2. Create empty `__init__.py` files in all `src` subdirectories to make them Python packages.
+- [x] 1.3. Create the main entry point file `src/markdown_maker/main.py`.
 - [ ] 1.4. Create a `pyproject.toml` file to define project metadata and dependencies (`click`, `requests`, `PyYAML`, `beautifulsoup4`, `markdownify`, `pytest`, `pytest-mock`, `ruff`).
 - [ ] 1.6. Create a `.gitignore` file and add `__pycache__/`, `.pytest_cache/`, `*.egg-info/`, `dist/`, `build/`, and importantly, `.secrets.yml`.
 - [ ] 1.7. Create a basic `README.md` with a project title and a brief description.

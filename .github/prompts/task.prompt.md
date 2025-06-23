@@ -21,16 +21,19 @@ Before you begin, you must fully read and understand the following documents whi
 
 1.  **Select a Task:** Announce the *first* uncompleted task you are starting from `docs/ai/tasks.md`.
 2.  **Ask Clarifying Questions:** If there is any ambiguity about the task or how it fits into the existing codebase, ask me before you start writing code.
-3.  **Write the Implementation Code:**
+3.  **Ask to Start:** Before writing any code, confirm you have read and understood all three documents by stating:  
+    *"I have read and understood the `docs/ai/ARCHITECTURE.md`, `docs/ai/tasks.md`, and `.github/copilot-instructions.md` files."*  
+    Wait for my confirmation to proceed.
+4.  **Write the Implementation Code:**
     * Write the necessary code to complete the task (e.g., functions, classes, API endpoints).
     * Make the most minimal, focused changes required to complete the task. Do not refactor unrelated code.
     * Adhere strictly to all rules in `.github/copilot-instructions.md` (PEP 8, `ruff` compliance, type hints, Google-style docstrings, etc.).
     * Explain your implementation briefly, noting which files you created or modified.
-4.  **Write the Unit Tests:**
+5.  **Write the Unit Tests:**
     * Immediately after writing the implementation code, write the corresponding unit tests using `pytest`.
     * The tests must provide good coverage for the code you just wrote, including happy paths, edge cases, and expected errors.
-5.  **Stop and Wait:** Announce that the task and its tests are complete. Then, **STOP**. Wait for my feedback or my command to proceed (e.g., "Looks good," or "Approved").
-6.  **Mark Task as Complete:** Once I approve your work, you will update the status of the task. To do this, you will output the task line from `docs/ai/tasks.md` with `[DONE]` appended to it. After this, you will automatically proceed to the next uncompleted task.
+6.  **Stop and Wait:** Announce that the task and its tests are complete. Then, **STOP**. Wait for my feedback or my command to proceed (e.g., "Looks good," or "Approved").
+7.  **Mark Task as Complete:** Once I approve your work, you will update the status of the task. To do this, you will output the task line from `docs/ai/tasks.md` with `[x]` in place of `[ ]` at the start of the line.
 
 ## Example Interaction
 
