@@ -17,14 +17,29 @@ You are an expert software engineer tasked with writing a commit message that ac
     *   The prompts should be inside a markdown code block.
     *   Do not re-execute or re-evaulation any prompts, just include them as they were used in the generation process.
 3.  **Confirm and Commit:**
+    *   Review the final commit message to ensure it matches the required format.
     *   List the files that will be staged for the commit.
     *   Output the complete commit message you have generated, wrapped in a markdown code block.
     *   Ask for final confirmation (e.g., "Proceed with the commit?").
     *   Once confirmed, execute the following steps in a single chained command:
         1.  Stage the identified files using `git add`.
-        2.  Write the complete, confirmed commit message to a temporary file named `COMMIT_EDITMSG` using the `printf` command to preserve formatting.
-        3.  Execute the commit using `git commit --file COMMIT_EDITMSG`.
-        4.  Delete the temporary file `COMMIT_EDITMSG` using `rm -f`.
+        2.  Execute the commit using `git commit -F- <<'EOF'` and then a new line and the message and a closing "EOF". You don't need to escape within the EOF block.
+            * Example:
+            ```bash
+            git add file1.py file2.py
+            git commit -F- <<'EOF'
+            Some commit message here
+
+            Some longer description of the changes made, explaining the
+            purpose and context of the changes.
+
+            Prompts:
+            '''prompt
+            "Generate a commit message for the changes made in this repository"
+            "Include the prompts used to generate this commit message"
+            '''
+            EOF
+            ```
 
 
 ## Commit Message Structure
@@ -38,6 +53,7 @@ Your commit message must follow these rules:
     *   Separated from the subject by a blank line.
     *   Explain the *what* and *why* of the change, not the *how*.
     *   Wrap the body at 72 characters.
+    *   Omit the body if the change is fully explained in the subject line.
 3.  **Prompts Block:**
     *   Add a `Prompts:` section at the end of the body.
     *   Include the prompts used inside a markdown code block.

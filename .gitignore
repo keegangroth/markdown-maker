@@ -4,8 +4,9 @@ __pycache__/
 *.pyo
 *.pyd
 
-# pytest
+# testing, etc
 .pytest_cache/
+.ruff_cache/
 
 # Setuptools
 *.egg-info/
@@ -13,7 +14,4 @@ dist/
 build/
 
 # Secrets
-config/.secrets.yml
-
-# Copilot stuff
-COMMIT_EDITMSG
+config/*.yml
