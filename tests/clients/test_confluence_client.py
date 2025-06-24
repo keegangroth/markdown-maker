@@ -91,3 +91,92 @@ def test_get_page_content_not_found(monkeypatch):
     client = ConfluenceClient()
     with pytest.raises(ValueError, match="Page with id 123 not found."):
         client.get_page_content("123")
+
+
+def test_get_child_pages_success(monkeypatch):
+    """Test get_child_pages returns a list of child pages when found."""
+    dummy_config = {
+        "confluence_base_url": "https://example.atlassian.net/wiki",
+        "confluence_username": "user@example.com",
+        "confluence_api_token": "token123",
+    }
+    dummy_children = [
+        {"id": "101", "title": "Child 1"},
+        {"id": "102", "title": "Child 2"},
+    ]
+
+    class DummyConfluence:
+        def get_child_pages(self, page_id):
+            assert page_id == "123"
+            return dummy_children
+
+    def dummy_confluence_init(self, url, username, password, cloud):
+        self.get_child_pages = DummyConfluence().get_child_pages
+
+    monkeypatch.setattr(
+        "markdown_maker.clients.confluence_client.load_config", lambda: dummy_config
+    )
+    monkeypatch.setattr(
+        "markdown_maker.clients.confluence_client.Confluence.__init__",
+        dummy_confluence_init,
+    )
+
+    client = ConfluenceClient()
+    result = client.get_child_pages("123")
+    assert result == dummy_children
+
+
+def test_get_child_pages_empty(monkeypatch):
+    """Test get_child_pages returns an empty list if no children found."""
+    dummy_config = {
+        "confluence_base_url": "https://example.atlassian.net/wiki",
+        "confluence_username": "user@example.com",
+        "confluence_api_token": "token123",
+    }
+
+    class DummyConfluence:
+        def get_child_pages(self, page_id):
+            return []
+
+    def dummy_confluence_init(self, url, username, password, cloud):
+        self.get_child_pages = DummyConfluence().get_child_pages
+
+    monkeypatch.setattr(
+        "markdown_maker.clients.confluence_client.load_config", lambda: dummy_config
+    )
+    monkeypatch.setattr(
+        "markdown_maker.clients.confluence_client.Confluence.__init__",
+        dummy_confluence_init,
+    )
+
+    client = ConfluenceClient()
+    result = client.get_child_pages("123")
+    assert result == []
+
+
+def test_get_child_pages_api_error(monkeypatch):
+    """Test get_child_pages raises an exception if the API call fails."""
+    dummy_config = {
+        "confluence_base_url": "https://example.atlassian.net/wiki",
+        "confluence_username": "user@example.com",
+        "confluence_api_token": "token123",
+    }
+
+    class DummyConfluence:
+        def get_child_pages(self, page_id):
+            raise RuntimeError("API error")
+
+    def dummy_confluence_init(self, url, username, password, cloud):
+        self.get_child_pages = DummyConfluence().get_child_pages
+
+    monkeypatch.setattr(
+        "markdown_maker.clients.confluence_client.load_config", lambda: dummy_config
+    )
+    monkeypatch.setattr(
+        "markdown_maker.clients.confluence_client.Confluence.__init__",
+        dummy_confluence_init,
+    )
+
+    client = ConfluenceClient()
+    with pytest.raises(RuntimeError, match="API error"):
+        client.get_child_pages("123")

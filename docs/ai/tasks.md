@@ -44,7 +44,7 @@ This document outlines the step-by-step tasks required to build the MVP of the "
 - [x] 4.2. Implement a `ConfluenceClient` class in this file using the `atlassian-python-api` package for all Confluence API interactions.
 - [x] 4.3. The `ConfluenceClient` constructor should take the base URL and authentication credentials from the config, and initialize the `atlassian.Confluence` client.
 - [x] 4.4. Implement a method `get_page_content(page_id: str) -> dict` that fetches a page's content from the Confluence REST API using the `atlassian-python-api` client.
-- [ ] 4.5. Implement a method `get_child_pages(page_id: str) -> list` that fetches the direct child pages of a given page.
+- [x] 4.5. Implement a method `get_child_pages(page_id: str) -> list` that fetches the direct child pages of a given page.
 - [ ] 4.6. Implement a utility in `src/markdown_maker/utils/helpers.py` to extract the `page_id` from a Confluence URL.
 - [ ] 4.7. Add robust error handling for API requests (e.g., 404 Not Found, 401 Unauthorized).
 - [ ] 4.8. Add unit tests for the `ConfluenceClient` using `pytest-mock` to mock `requests`.

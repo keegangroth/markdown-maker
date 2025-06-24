@@ -46,3 +46,21 @@ class ConfluenceClient:
         if not page:
             raise ValueError(f"Page with id {page_id} not found.")
         return page
+
+    def get_child_pages(self, page_id: str) -> list:
+        """Fetches the direct child pages of a given Confluence page.
+
+        Args:
+            page_id: The ID of the parent Confluence page.
+
+        Returns:
+            A list of dictionaries, each representing a child page.
+
+        Raises:
+            Exception: If the API request fails.
+        """
+        try:
+            children = self.client.get_child_pages(page_id)
+        except Exception as exc:
+            raise RuntimeError(f"Failed to fetch child pages: {exc}") from exc
+        return list(children) if children is not None else []
