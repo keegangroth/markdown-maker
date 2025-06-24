@@ -27,6 +27,9 @@ which define what we are building and how we are building it:
 3.  **`.github/copilot-instructions.md`**: This file contains our mandatory
     coding standards, linting rules, and testing strategy. **You must follow
     these rules for every line of code you write.**
+4.  **`.github/prompts/test.prompt.md`**: This file contains the instructions for
+    how to run tests for the code you implement. You must follow these
+    instructions when writing tests.
 
 *Do not start until you have confirmed you have read and understood all three
 documents.*
@@ -61,29 +64,21 @@ documents.*
       `ruff` compliance, type hints, Google-style docstrings, etc.).
     * Explain your implementation briefly, noting which files you created or
       modified.
-6.  **Run Tests:**  After writing the implementation code, run all tests using
-    to ensure everything passes. 
-    * Use `pytest` to run the tests you wrote and any existing tests.
-    * If the task does not require unit tests, you can skip this step, but
-     explain why.
-7. **Fix Tests:** If any tests fail, debug and fix them before proceeding.
-    * Skip this step if there are no failures from the previous step.
-    * Once complete, go back to step 6 and run the tests again to confirm they
-      pass.
-7.  **Linting:** Run `ruff` to ensure your code adheres to the project's
-    style guidelines. Fix any linting issues before proceeding.
-6.  **Announce Completion and Await Command:** After you have completed all
+6.  **Run Tests:** After writing the implementation code, run all tests using
+    the test prompt:
+    #prompt: .github/prompts/test.prompt.md
+7.  **Announce Completion and Await Command:** After you have completed all
     parts of a single task from `docs/ai/tasks.md` (including writing code and
     any required tests), you MUST announce your completion and stop. Your
     response must be ONLY: "Task [task number] is complete. I will await your
     command before proceeding." Do not add any other text or analysis.
-7.  **Mark Task as Complete:** Once I approve your work, you will update the
+8.  **Mark Task as Complete:** Once I approve your work, you will update the
     status of the task. To do this, you will output the task line from
     `docs/ai/tasks.md` with `[x]` in place of `[ ]` at the start of the line.
-8.  **Never Automatically Commit:** You will never automatically commit your
+9.  **Never Automatically Commit:** You will never automatically commit your
     changes. Instead, you will wait for my confirmation before proceeding with
     any commits.
-9.  **Never Automatically Start the Next Task:** Only do the current task. Do
+10.  **Never Automatically Start the Next Task:** Only do the current task. Do
     not ask to start the next task.
 
 ## Example Interaction

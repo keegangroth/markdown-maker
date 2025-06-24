@@ -13,6 +13,8 @@ Core Principles
 
     No Unused Code: Do not suggest code, imports, or variables that are not used.
 
+    Added libraries: Do not suggest adding new libraries unless absolutely necessary. If a library is needed, explain why it is required and how it will be used. Add it to the `pyproject.toml` file and use that to install it.
+
 1. Code Style and Formatting
 
     PEP 8 Compliance: All Python code MUST strictly follow the PEP 8 style guide. Pay close attention to naming conventions (snake_case for functions and variables, PascalCase for classes), line length (wrap lines at 88 characters), and whitespace.
