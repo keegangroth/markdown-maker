@@ -19,6 +19,7 @@ dependencies = [
     "PyYAML",
     "beautifulsoup4",
     "markdownify",
+    "atlassian-python-api",
 ]
 
 [project.optional-dependencies]
