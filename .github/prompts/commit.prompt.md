@@ -18,6 +18,11 @@ message that accurately summarizes the recent changes in the
 repository.
 
 
+## Contextual Documents
+
+`.  **`docs/ai/tasks.md`**: This document contains the full list of technical
+    tasks, broken down from user stories. This is your backlog.
+
 ## Commit Message Structure
 
 Your commit message must follow these rules while being a brief as
@@ -60,21 +65,30 @@ Prompts:
 
 1.  **Gather Context:**
     *   Execute the following steps in a single chained command.
-    *   Use `git status --porcelain` to identify modified and new files.
-    *   Use `git diff` and `git diff --staged` to collect the changes made
-        in the codebase.
-    *   Fall back to the `#changes` variable only if you have to.
-2.  **Generate Commit Message:**
+    *   Use `git status --porcelain=v2` to collect the list of files
+        that have been modified, added, or deleted.
+    *   Note that a status of `.M` means unstaged and `M.` or `MM`
+        means staged. A status of `?` means a new untracked file.
+    *   If there are staged files, use `git --no-pager diff --staged`
+        to collect the changes and ignore all other files.
+    *   Otherwise, if there are no staged files, use `git add -N <files>`
+        to stage new files without adding their contents. And then use
+        `git --no-pager diff` to collect the changes.
+2.  **Check if the relevant task is marked as complete:**
+    *   If the task is marked as complete, continue to the next step.
+    *   If the task is not marked as complete, ask the user if it should be
+        marked as complete.
+3.  **Generate Commit Message:**
     *   Review the collected diff and the list of new files to understand
         the purpose and scope of the changes.
     *   Based on your analysis, compose a commit message that strictly
         follows the structure above.
-3.  **Append Prompts:** At the end of the commit message body, append all
+4.  **Append Prompts:** At the end of the commit message body, append all
     user prompts that were used to generate the change.
     *   All prompts should be inside a single bulleted section.
     *   Do not re-execute or re-evaluate any prompts, just include them as
         they were used in the generation process.
-4.  **Confirm and Commit:**
+5.  **Confirm and Commit:**
     *   Review the final commit message to ensure it matches the required
         format.
     *   List the files that will be staged for the commit.
