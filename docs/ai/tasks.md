@@ -29,14 +29,14 @@ This document outlines the step-by-step tasks required to build the MVP of the "
 
 ## Phase 3: Core CLI Implementation
 
-- [ ] 3.1. In `src/markdown_maker/main.py`, set up the main CLI group using `click`.
-- [ ] 3.2. Implement the `convert` command within `main.py`.
-- [ ] 3.3. Add the following options to the `convert` command:
+- [x] 3.1. In `src/markdown_maker/main.py`, set up the main CLI group using `click`.
+- [x] 3.2. Implement the `convert` command within `main.py`.
+- [x] 3.3. Add the following options to the `convert` command:
     - `--url` (required, string)
     - `--output-dir` (optional, string, defaults to current directory)
     - `--recursive` (optional, boolean flag)
-- [ ] 3.4. Implement the basic logic for the `convert` command to print the received options.
-- [ ] 3.5. Add a `--help` menu and ensure it displays correctly.
+- [x] 3.4. Implement the basic logic for the `convert` command to print the received options.
+- [x] 3.5. Add a `--help` menu and ensure it displays correctly.
 
 ## Phase 4: Confluence API Client
 
