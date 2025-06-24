@@ -3,6 +3,10 @@
 Project to make markdown files out of confluence pages or google docs
 to make them easier to provide to AI as context.
 
+### Development
+
+Going to try and use AI to generate all code, artifacts, etc.
+
 ## Setup
 
 1.  **Clone the repository:**
@@ -22,6 +26,24 @@ to make them easier to provide to AI as context.
     pip install -e ".[dev]"
     ```
 
-## Development
+## Running Tests
 
- Going to try and use AI to generate all code, artifacts, etc.
+To run the unit tests, use `pytest`:
+
+```bash
+pytest
+```
+
+## Linting
+
+This project uses `ruff` for linting and formatting. To check for linting errors, run:
+
+```bash
+ruff check .
+```
+
+To automatically fix formatting issues, run:
+
+```bash
+ruff format .
+```

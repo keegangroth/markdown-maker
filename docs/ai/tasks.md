@@ -19,13 +19,13 @@ This document outlines the step-by-step tasks required to build the MVP of the "
 
 ## Phase 2: Configuration Management
 
-- [ ] 2.1. Create `config/config.yml.example` with placeholder non-secret configuration (e.g., `confluence_base_url`).
-- [ ] 2.2. Create `config/.secrets.yml.example` with placeholder secrets (e.g., `confluence_username`, `confluence_api_token`).
-- [ ] 2.3. Implement a configuration loader in `src/markdown_maker/utils/config_loader.py`.
+- [x] 2.1. Create `config/config.yml.example` with placeholder non-secret configuration (e.g., `confluence_base_url`).
+- [x] 2.2. Create `config/.secrets.yml.example` with placeholder secrets (e.g., `confluence_username`, `confluence_api_token`).
+- [x] 2.3. Implement a configuration loader in `src/markdown_maker/utils/config.py`.
     - It should load settings from a `config.yml` and `.secrets.yml`.
     - It should handle missing files gracefully.
     - It should raise a clear error if required secrets are missing.
-- [ ] 2.4. Add unit tests for the configuration loader.
+- [x] 2.4. Add unit tests for the configuration loader.
 
 ## Phase 3: Core CLI Implementation
 

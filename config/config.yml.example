@@ -1,0 +1,4 @@
+# Configuration for Markdown Maker
+
+# The base URL of your Confluence instance.
+confluence_base_url: "https://your-company.atlassian.net/wiki"
