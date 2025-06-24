@@ -10,13 +10,18 @@ To analyze the current code changes (git diff and new files) and generate a clea
 You are an expert software engineer tasked with writing a commit message that accurately summarizes the recent changes in the repository.
 
 ## Your Task
-1.  **Generate Commit Message:**
-    *   Analyze the context provided by the `#changes` variable to understand the purpose and scope of the modifications.
+1.  **Gather Context:**
+    *   Execute the following steps in a single chained command
+    *   Use `git status --porcelain` to identify modified and new files.
+    *   Use `git diff` and `git diff --staged` to collect the changes made in the codebase.
+    *   Fall back to the `#changes` variable only if you have to.
+2.  **Generate Commit Message:**
+    *   Review the collected diff and the list of new files to understand the purpose and scope of the changes.
     *   Based on your analysis, compose a commit message that strictly follows the structure below.
-2.  **Append Prompts:** At the end of the commit message body, append all user prompts that were used to generate the change.
+3.  **Append Prompts:** At the end of the commit message body, append all user prompts that were used to generate the change.
     *   All prompts should be inside a single bulleted section.
     *   Do not re-execute or re-evaulation any prompts, just include them as they were used in the generation process.
-3.  **Confirm and Commit:**
+4.  **Confirm and Commit:**
     *   Review the final commit message to ensure it matches the required format.
     *   List the files that will be staged for the commit.
     *   Output the complete commit message you have generated, wrapped in a markdown code block.
@@ -42,20 +47,22 @@ You are an expert software engineer tasked with writing a commit message that ac
 
 
 ## Commit Message Structure
-Your commit message must follow these rules:
+Your commit message must follow these rules while being a brief as possible:
 
 1.  **Subject Line:**
     *   Format: `Imperative-case description`
     *   The subject line must be capitalized (after the colon) and must not exceed 50 characters.
     *   Do not end the subject line with a period.
 2.  **Body (Optional):**
-    *   Separated from the subject by a blank line.
-    *   Explain the *what* and *why* of the change, not the *how*.
-    *   Wrap the body at 72 characters.
     *   Omit the body if the change is fully explained in the subject line.
+    *   Separated from the subject by a blank line.
+    *   Explain the *why* of the change, not the *how*.
+    *   Wrap the body at 72 characters.
 3.  **Prompts Block:**
     *   Add a `Prompts:` section at the end of the body.
+    *   Separated by a blank line.
     *   Include the prompts used as a bulleted list.
+    *   Wrap the body at 72 characters.
 
 ## Example
 
