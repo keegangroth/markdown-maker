@@ -14,7 +14,7 @@ You are an expert software engineer tasked with writing a commit message that ac
     *   Analyze the context provided by the `#changes` variable to understand the purpose and scope of the modifications.
     *   Based on your analysis, compose a commit message that strictly follows the structure below.
 2.  **Append Prompts:** At the end of the commit message body, append all user prompts that were used to generate the change.
-    *   The prompts should be inside a markdown code block.
+    *   All prompts should be inside a single bulleted section.
     *   Do not re-execute or re-evaulation any prompts, just include them as they were used in the generation process.
 3.  **Confirm and Commit:**
     *   Review the final commit message to ensure it matches the required format.
@@ -34,10 +34,9 @@ You are an expert software engineer tasked with writing a commit message that ac
             purpose and context of the changes.
 
             Prompts:
-            '''prompt
-            "Generate a commit message for the changes made in this repository"
-            "Include the prompts used to generate this commit message"
-            '''
+            * Generate a commit message for the changes made in this
+              repository
+            * Include the prompts used to generate this commit message
             EOF
             ```
 
@@ -56,7 +55,7 @@ Your commit message must follow these rules:
     *   Omit the body if the change is fully explained in the subject line.
 3.  **Prompts Block:**
     *   Add a `Prompts:` section at the end of the body.
-    *   Include the prompts used inside a markdown code block.
+    *   Include the prompts used as a bulleted list.
 
 ## Example
 
@@ -69,8 +68,7 @@ successful authentication. This is the first step towards securing the
 application.
 
 Prompts:
-'''prompt
-"Create a login endpoint for user authentication"
-"Add JWT token generation to the login endpoint"
+* Create a login endpoint for user authentication
+* Add JWT token generation to the login endpoint
 '''
 ```
