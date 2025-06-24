@@ -10,23 +10,21 @@ To analyze the current code changes (git diff and new files) and generate a clea
 You are an expert software engineer tasked with writing a commit message that accurately summarizes the recent changes in the repository.
 
 ## Your Task
-1.  **Gather Context:**
-    *   Run `git diff` to get the changes for all modified files.
-    *   Run `git status --porcelain` to identify any new, untracked files.
-2.  **Analyze the Changes:** Review the collected diff and the list of new files to understand the purpose and scope of the changes.
-3.  **Generate the Commit Message:** Based on your analysis, compose a commit message that strictly follows the structure below.
-4.  **Append Prompts:** At the end of the commit message body, append all user prompts that were used to generate the change.
+1.  **Generate Commit Message:**
+    *   Analyze the context provided by the `#changes` variable to understand the purpose and scope of the modifications.
+    *   Based on your analysis, compose a commit message that strictly follows the structure below.
+2.  **Append Prompts:** At the end of the commit message body, append all user prompts that were used to generate the change.
     *   The prompts should be inside a markdown code block.
     *   Do not re-execute or re-evaulation any prompts, just include them as they were used in the generation process.
-5.  **Confirm Before Committing:**
+3.  **Confirm and Commit:**
+    *   List the files that will be staged for the commit.
     *   Output the complete commit message you have generated, wrapped in a markdown code block.
-    *   Ask for confirmation from the user before proceeding (e.g., "Does this commit message look correct?").
-6.  **Execute the Commit:**
-    *   Once the user confirms:
-    1.  Stage the identified files using `git add`.
-    2.  Write the complete, confirmed commit message to a temporary file named `COMMIT_EDITMSG`. Overwrite any existing file with that name.
-    3.  Execute the commit using `git commit --file COMMIT_EDITMSG`.
-    4.  Delete the temporary file `COMMIT_EDITMSG`.
+    *   Ask for final confirmation (e.g., "Proceed with the commit?").
+    *   Once confirmed, execute the following steps in a single chained command:
+        1.  Stage the identified files using `git add`.
+        2.  Write the complete, confirmed commit message to a temporary file named `COMMIT_EDITMSG` using the `printf` command to preserve formatting.
+        3.  Execute the commit using `git commit --file COMMIT_EDITMSG`.
+        4.  Delete the temporary file `COMMIT_EDITMSG` using `rm -f`.
 
 
 ## Commit Message Structure

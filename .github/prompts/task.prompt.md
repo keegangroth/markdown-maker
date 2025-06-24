@@ -32,7 +32,7 @@ Before you begin, you must fully read and understand the following documents whi
 5.  **Write the Unit Tests:**
     * Immediately after writing the implementation code, write the corresponding unit tests using `pytest`.
     * The tests must provide good coverage for the code you just wrote, including happy paths, edge cases, and expected errors.
-6.  **Stop and Wait:** Announce that the task and its tests are complete. Then, **STOP**. Wait for my feedback or my command to proceed (e.g., "Looks good," or "Approved").
+6.  **Announce Completion and Await Command:** After you have completed all parts of a single task from `docs/ai/tasks.md` (including writing code and any required tests), you MUST announce your completion and stop. Your response must be ONLY: "Task [task number] is complete. I will await your command before proceeding." Do not add any other text or analysis.
 7.  **Mark Task as Complete:** Once I approve your work, you will update the status of the task. To do this, you will output the task line from `docs/ai/tasks.md` with `[x]` in place of `[ ]` at the start of the line.
 8.  **Never Automatically Commit:** You will never automatically commit your changes. Instead, you will wait for my confirmation before proceeding with any commits.
 9.  **Never Automatically Start the Next Task:** Only do the current task.
