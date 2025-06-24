@@ -88,9 +88,17 @@ Prompts:
     *   All prompts should be inside a single bulleted section.
     *   Do not re-execute or re-evaluate any prompts, just include them as
         they were used in the generation process.
+    *   Do not include any prompts that were not used in the generation
+        of the commit message. Specifically, do not include the
+        `Follow instructions from 'commit.prompt.md'` prompt.
+    *   If there are no prompts, do not include the `Prompts:` section.
+    *   Ensure the prompts are wrapped at 80 characters.
 5.  **Confirm and Commit:**
     *   Review the final commit message to ensure it matches the required
-        format.
+        format. Especially check:
+        1. The subject line is in imperative case and does not exceed 70
+        characters.
+        2. The body is wrapped at 80 characters.
     *   List the files that will be staged for the commit.
     *   Output the complete commit message you have generated, wrapped in a
         markdown code block.
