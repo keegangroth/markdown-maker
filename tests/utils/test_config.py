@@ -1,5 +1,6 @@
 """Unit tests for the configuration loader."""
 
+import os
 from unittest.mock import mock_open, patch
 
 import pytest
@@ -93,3 +94,27 @@ def test_load_config_missing_required_secret_raises_error(mock_open_func, mock_e
 
     # The implementation hardcodes the required secrets, so we check for one of them
     assert "Missing required secrets: confluence_api_token" in str(excinfo.value)
+
+
+@patch("pathlib.Path.exists")
+@patch("builtins.open")
+def test_load_config_honors_environment_variable(mock_open_func, mock_exists):
+    """Tests that the config path can be overridden by an environment variable."""
+    mock_exists.return_value = True
+    mock_open_func.side_effect = [
+        mock_open(read_data=SAMPLE_CONFIG_YAML).return_value,
+        mock_open(read_data=SAMPLE_SECRETS_YAML).return_value,
+    ]
+
+    custom_path = "/test/config/dir"
+
+    with patch.dict(os.environ, {"MARKDOWN_MAKER_CONFIG_DIR": custom_path}):
+        config = load_config()
+
+    assert config["confluence_username"] == "user@example.com"
+
+    # Verify that the correct paths were used for opening files
+    call_args = mock_open_func.call_args_list
+    assert len(call_args) == 2
+    assert str(call_args[0].args[0]) == os.path.join(custom_path, "config.yml")
+    assert str(call_args[1].args[0]) == os.path.join(custom_path, ".secrets.yml")

@@ -8,6 +8,7 @@ Functions:
     load_config: Loads and merges configurations from specified files.
 """
 
+import os
 from pathlib import Path
 from typing import Any
 
@@ -17,8 +18,10 @@ import yaml
 def load_config() -> dict[str, Any]:
     """Loads and merges configuration from YAML files.
 
-    This function loads settings from `config.yml` and `.secrets.yml`
-    located in the `config` directory at the project root. It merges
+    This function loads settings from `config.yml` and `.secrets.yml`.
+    By default, it looks in the `config` directory at the project root.
+    The config directory can be overridden by setting the
+    `MARKDOWN_MAKER_CONFIG_DIR` environment variable. It merges
     them, with secrets taking precedence.
 
     It handles missing configuration files gracefully but will raise an
@@ -31,11 +34,15 @@ def load_config() -> dict[str, Any]:
         FileNotFoundError: If `.secrets.yml` cannot be found.
         ValueError: If required secret keys are missing from the config.
     """
-    # Assume the script is in src/markdown_maker/utils
-    # Project root is four levels up
-    # TODO: user should optionally be able to specify the config path
-    project_root = Path(__file__).resolve().parent.parent.parent.parent
-    config_dir = project_root / "config"
+    # Check for a custom config directory from an environment variable
+    config_dir_env = os.getenv("MARKDOWN_MAKER_CONFIG_DIR")
+
+    if config_dir_env:
+        config_dir = Path(config_dir_env)
+    else:
+        # Default to the 'config' directory in the project root
+        project_root = Path(__file__).resolve().parent.parent.parent.parent
+        config_dir = project_root / "config"
 
     config_path = config_dir / "config.yml"
     secrets_path = config_dir / ".secrets.yml"
