@@ -33,8 +33,20 @@ def traverse_and_write(
     single_file: bool = False,
     output_path: str | None = None,
     parent_context: str = "",
+    skip_strikethrough_links: bool = False,
 ) -> None:
-    """Unified recursive traversal for both single-file and multi-file output modes."""
+    """Unified recursive traversal for both single-file and multi-file output modes.
+
+    Args:
+        page_id: The root page ID.
+        url: The root page URL.
+        output_dir: Output directory for multi-file mode.
+        max_depth: Maximum recursion depth.
+        single_file: Whether to concatenate all pages into a single file.
+        output_path: Output file path for single-file mode.
+        parent_context: Context for error messages.
+        skip_strikethrough_links: If True, skip recursion into struck-through links.
+    """
     if single_file:
         if not output_path:
             raise ValueError("output_path must be provided for single_file mode.")
@@ -52,6 +64,7 @@ def traverse_and_write(
         handle_page=handler,
         parent_context=parent_context,
         parent_dir=None,
+        skip_strikethrough_links=skip_strikethrough_links,
     )
     traverser.traverse(
         pid=page_id,
@@ -81,12 +94,18 @@ def traverse_and_write(
     is_flag=True,
     help="Concatenate all discovered pages into a single Markdown file (named after the page title).",
 )
+@click.option(
+    "--skip-strikethrough-links",
+    is_flag=True,
+    help="Do not recurse into links that are struck through in the HTML.",
+)
 def convert(
     url: str,
     output_dir: str,
     recursive: bool,
     max_depth: int,
     single_file: bool,
+    skip_strikethrough_links: bool,
 ) -> None:
     """Converts a Confluence page to a Markdown file."""
     import os
@@ -113,6 +132,7 @@ def convert(
             max_depth=max_depth,
             single_file=single_file,
             output_path=output_path if single_file else None,
+            skip_strikethrough_links=skip_strikethrough_links,
         )
         if single_file:
             click.echo(f"Saved: {output_path}")

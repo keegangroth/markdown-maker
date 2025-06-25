@@ -19,6 +19,7 @@ class ConfluenceTreeTraverser:
         handle_page: Callable[[str, str, str, int, str | None], str],
         parent_context: str = "",
         parent_dir: str | None = None,
+        skip_strikethrough_links: bool = False,
     ):
         self.client = client
         self.max_depth = max_depth
@@ -26,6 +27,7 @@ class ConfluenceTreeTraverser:
         self.parent_context = parent_context
         self.parent_dir = parent_dir
         self.visited: set[str] = set()
+        self.skip_strikethrough_links = skip_strikethrough_links
 
     def traverse(
         self,
@@ -97,6 +99,21 @@ class ConfluenceTreeTraverser:
                 href = a.get("href")
                 if not isinstance(href, str):
                     continue
+                # Skip if struck through and flag is set
+                if self.skip_strikethrough_links:
+                    el = a
+                    is_struck = False
+                    while el is not None:
+                        if el.name in {"s", "strike"}:
+                            is_struck = True
+                            break
+                        style = el.get("style", "")
+                        if isinstance(style, str) and "line-through" in style:
+                            is_struck = True
+                            break
+                        el = el.parent if hasattr(el, "parent") else None
+                    if is_struck:
+                        continue
                 try:
                     embedded_page_id = extract_page_id_from_url(href)
                 except ValueError:

@@ -148,3 +148,55 @@ def test_embedded_links_respect_max_depth(tmp_path: Path, mocker, dummy_page_wit
     # Embedded pages should NOT be created due to max_depth=1
     assert not (parent_dir / "embedded_one").exists()
     assert not (parent_dir / "embedded_two").exists()
+
+
+def test_embedded_links_skip_strikethrough(tmp_path: Path, mocker, embedded_page):
+    """Test that struck-through embedded links are not recursed into if the flag is set."""
+    valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=42"
+    # The first link is struck through, the second is normal
+    html = (
+        '<s><a href="https://company.atlassian.net/wiki/pages/viewpage.action?pageId=1111">Embedded 1</a></s>'
+        '<a href="https://company.atlassian.net/wiki/pages/viewpage.action?pageId=2222">Embedded 2</a>'
+    )
+    page_map = {
+        "42": {"title": "Parent Page", "body": {"storage": {"value": html}}, "_children": []},
+        "1111": embedded_page("1111", "Embedded One", "Embedded 1"),
+        "2222": embedded_page("2222", "Embedded Two", "Embedded 2"),
+    }
+
+    def get_page_content_side_effect(page_id):
+        return page_map[page_id]
+
+    mocker.patch(
+        "markdown_maker.clients.confluence_client.ConfluenceClient.get_page_content",
+        side_effect=get_page_content_side_effect,
+    )
+    mocker.patch(
+        "markdown_maker.converters.html_to_markdown.convert_html_to_markdown",
+        side_effect=lambda html: (
+            html.replace("<s>", "").replace("</s>", "").replace("<a ", "").replace(">", "").replace("</a", "")
+        ),
+    )
+    mocker.patch(
+        "markdown_maker.clients.confluence_client.ConfluenceClient.get_child_pages",
+        return_value=[],
+    )
+    runner = CliRunner()
+    result = runner.invoke(
+        cli,
+        [
+            "convert",
+            "--url",
+            valid_url,
+            "--output-dir",
+            str(tmp_path),
+            "--recursive",
+            "--skip-strikethrough-links",
+        ],
+    )
+    assert result.exit_code == 0
+    parent_dir = tmp_path / "parent_page"
+    assert parent_dir.exists() and parent_dir.is_dir()
+    # Only the non-struck embedded page should be created
+    assert not (parent_dir / "embedded_one").exists()
+    assert (parent_dir / "embedded_two").exists()
