@@ -55,8 +55,7 @@ def load_config() -> dict[str, Any]:
 
     if not secrets_path.exists():
         raise FileNotFoundError(
-            f"Secrets file not found at {secrets_path}. "
-            "Please create it by copying `.secrets.yml.example`."
+            f"Secrets file not found at {secrets_path}. Please create it by copying `.secrets.yml.example`."
         )
 
     with open(secrets_path) as f:

@@ -96,7 +96,7 @@ This document outlines the step-by-step tasks required to build the MVP of the "
 
 ## Phase 8: Single File Output Option
 
-- [ ] 8.1. Add a CLI option to download all discovered pages (from recursive or single-page conversion) into a single Markdown file instead of separate files.
+- [x] 8.1. Add a CLI option to download all discovered pages (from recursive or single-page conversion) into a single Markdown file instead of separate files.
     - When this option is enabled, concatenate the Markdown content of all pages in the order they are discovered.
     - Insert clear page breaks or headings between each page's content, including the page title and source URL.
     - Ensure this option works with both single-page and recursive conversions.

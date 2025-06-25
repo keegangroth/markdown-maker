@@ -40,9 +40,7 @@ class ConfluenceClient:
         Raises:
             Exception: If the API request fails.
         """
-        page = self.client.get_page_by_id(
-            page_id, expand="body.storage,version,ancestors"
-        )
+        page = self.client.get_page_by_id(page_id, expand="body.storage,version,ancestors")
         if not page:
             raise ValueError(f"Page with id {page_id} not found.")
         return page
