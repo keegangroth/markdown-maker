@@ -18,7 +18,9 @@ def dummy_page():
 
 def test_output_dir_created(tmp_path: Path, mocker, dummy_page):
     """Test that the output directory is created if it does not exist."""
-    valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
+    valid_url = (
+        "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
+    )
     mocker.patch(
         "markdown_maker.clients.confluence_client.ConfluenceClient.get_page_content",
         return_value=dummy_page,

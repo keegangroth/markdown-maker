@@ -25,11 +25,11 @@ def convert_html_to_markdown(html: str) -> str:
     markdown = md(
         str(soup),
         heading_style="ATX",  # Use # for headings
-        bullets="-*",         # Use - or * for unordered lists
+        bullets="-*",  # Use - or * for unordered lists
         code_language_detection=True,  # Try to detect code block language
-        strip=['style', 'script'],     # Remove style/script tags
-        escape_underscores=False,      # Allow underscores in text
-        wrap=True,                    # Enable line wrapping
-        wrap_width=120,               # Set wrap width to 120
+        strip=["style", "script"],  # Remove style/script tags
+        escape_underscores=False,  # Allow underscores in text
+        wrap=True,  # Enable line wrapping
+        wrap_width=120,  # Set wrap width to 120
     )
     return markdown

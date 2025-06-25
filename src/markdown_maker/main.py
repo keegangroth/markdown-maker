@@ -23,8 +23,15 @@ def sanitize_filename(title: str) -> str:
     return f"{name}.md"
 
 
-def handle_recursive_conversion(page_id: str, output_dir: str) -> None:
-    """Recursively fetch, convert, and save a page and its child pages."""
+def handle_recursive_conversion(
+    page_id: str, output_dir: str, max_depth: int, current_depth: int = 1
+) -> None:
+    """Recursively fetch, convert, and save a page and its child pages.
+
+    Recursion stops when current_depth > max_depth.
+    """
+    if current_depth > max_depth:
+        return
     client = ConfluenceClient()
     page = client.get_page_content(page_id)
     html = page.get("body", {}).get("storage", {}).get("value", "")
@@ -45,7 +52,7 @@ def handle_recursive_conversion(page_id: str, output_dir: str) -> None:
         child_dir = os.path.join(
             output_dir, sanitize_filename(child_title).replace(".md", "")
         )
-        handle_recursive_conversion(child_id, child_dir)
+        handle_recursive_conversion(child_id, child_dir, max_depth, current_depth + 1)
 
 
 @cli.command()
@@ -57,12 +64,20 @@ def handle_recursive_conversion(page_id: str, output_dir: str) -> None:
     type=click.Path(file_okay=False, dir_okay=True, writable=True, resolve_path=True),
 )
 @click.option("--recursive", is_flag=True, help="Recursively convert child pages.")
-def convert(url: str, output_dir: str, recursive: bool) -> None:
+@click.option(
+    "--max-depth",
+    default=3,
+    show_default=True,
+    type=int,
+    help="Maximum recursion depth for child/embedded pages.",
+)
+def convert(url: str, output_dir: str, recursive: bool, max_depth: int) -> None:
     """Converts a Confluence page to a Markdown file."""
     page_id = extract_page_id_from_url(url)
     if recursive:
-        handle_recursive_conversion(page_id, output_dir)
+        handle_recursive_conversion(page_id, output_dir, max_depth)
         click.echo(f"Recursive: {recursive}")
+        click.echo(f"Max Depth: {max_depth}")
         click.echo(f"URL: {url}")
         click.echo(f"Output Directory: {output_dir}")
         return
@@ -82,6 +97,8 @@ def convert(url: str, output_dir: str, recursive: bool) -> None:
     click.echo(f"URL: {url}")
     click.echo(f"Output Directory: {output_dir}")
     click.echo(f"Recursive: {recursive}")
+    if recursive:
+        click.echo(f"Max Depth: {max_depth}")
 
 
 if __name__ == "__main__":

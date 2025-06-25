@@ -77,10 +77,11 @@ This document outlines the step-by-step tasks required to build the MVP of the "
     - For each child page, creates a subdirectory named after the parent page's title.
     - Recursively calls itself for each child page, passing the new output path.
     - When recursing to embedded Confluence links, mirror the directory structure of the page where the link was found (do not attempt to mirror the full Confluence hierarchy).
-- [ ] 7.3. Implement a `--max-depth` CLI option (default: 3):
+- [x] 7.3. Implement a `--max-depth` CLI option (default: 3):
     - Add a `--max-depth` option to the CLI to limit recursion depth during conversion.
     - Ensure the default value is 3.
     - Enforce this limit in both child page and embedded link recursion to prevent extremely large conversions.
+    - Implemented: CLI now accepts --max-depth, default is 3, and recursion is limited accordingly. Tests added for option and enforcement.
 - [ ] 7.4. Implement recursion into embedded Confluence links:
     - For each page, find any embedded Confluence links within the page content (e.g., links to other Confluence pages embedded in the body).
     - Recursively convert and save those linked pages as well, using the same output structure as the page where the link was found.

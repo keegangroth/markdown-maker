@@ -18,7 +18,9 @@ def dummy_page():
 
 def test_convert_command_saves_markdown_file(tmp_path: Path, mocker, dummy_page):
     """Test that the convert command saves Markdown to a file with a sanitized title."""
-    valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
+    valid_url = (
+        "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
+    )
     # Patch ConfluenceClient.get_page_content to return dummy page
     mocker.patch(
         "markdown_maker.clients.confluence_client.ConfluenceClient.get_page_content",
