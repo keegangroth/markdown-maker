@@ -4,6 +4,7 @@ These tests verify that when the --single-file option is used, all discovered pa
 are concatenated into a single Markdown file with correct page breaks, headings, and ordering.
 """
 
+import io
 from pathlib import Path
 
 import pytest
@@ -77,6 +78,7 @@ def test_single_file_output_recursive(tmp_path: Path, mocker, dummy_recursive_pa
         "markdown_maker.main.handle_recursive_conversion",
         return_value=None,
     )
+
     # Patch ConfluenceClient.get_page_content to return parent/child by id
     def get_page_content_side_effect(page_id):
         for page in dummy_recursive_pages:
@@ -95,6 +97,7 @@ def test_single_file_output_recursive(tmp_path: Path, mocker, dummy_recursive_pa
         .replace("<h2>", "## ")
         .replace("</h2>", ""),
     )
+
     # Patch get_child_pages to simulate parent->child relationship
     def get_child_pages_side_effect(page_id):
         if page_id == "1":
@@ -150,6 +153,7 @@ def test_single_file_embedded_link_error_context(tmp_path: Path, mocker, dummy_s
             return dummy_page_with_link
         # Simulate an API error for inaccessible page
         from atlassian.errors import ApiError
+
         raise ApiError("No access")
 
     mocker.patch(
@@ -176,3 +180,83 @@ def test_single_file_embedded_link_error_context(tmp_path: Path, mocker, dummy_s
     # Should mention the embedded link URL in the error output
     assert inaccessible_url in result.output
     assert "embedded link" in result.output or "Could not access" in result.output
+
+
+def make_mock_page(page_id, title, html, children=None):
+    page = {
+        "id": page_id,
+        "title": title,
+        "body": {"storage": {"value": html}},
+    }
+    children = children or []
+    return page, children
+
+
+def test_single_file_recursive_progressive_write(mocker):
+    """Test that single_file_recursive writes each page as soon as it is discovered (progressive write)."""
+    import markdown_maker.main as mm_main
+
+    # Create page dicts only (no nested tuples)
+    root = {
+        "id": "root",
+        "title": "Root",
+        "body": {"storage": {"value": '<p>Root content <a href="http://confluence/child2">link</a></p>'}},
+    }
+    child1 = {"id": "child1", "title": "Child1", "body": {"storage": {"value": "<p>Child1 content</p>"}}}
+    child2 = {"id": "child2", "title": "Child2", "body": {"storage": {"value": "<p>Child2 content</p>"}}}
+    grandchild1 = {
+        "id": "grandchild1",
+        "title": "Grandchild1",
+        "body": {"storage": {"value": "<p>Grandchild1 content</p>"}},
+    }
+    # pages[pid] = (page_dict, [child_page_dict, ...])
+    pages = {
+        "root": (root, [child1, child2]),
+        "child1": (child1, [grandchild1]),
+        "child2": (child2, []),
+        "grandchild1": (grandchild1, []),
+    }
+
+    def get_page_content(pid):
+        return pages[pid][0]
+
+    def get_child_pages(pid):
+        return pages[pid][1]
+
+    mocker.patch(
+        "markdown_maker.clients.confluence_client.ConfluenceClient.get_page_content",
+        side_effect=get_page_content,
+    )
+    mocker.patch(
+        "markdown_maker.clients.confluence_client.ConfluenceClient.get_child_pages",
+        side_effect=get_child_pages,
+    )
+    mocker.patch("markdown_maker.main.convert_html_to_markdown", side_effect=lambda x: x)
+    mocker.patch("markdown_maker.main.extract_page_id_from_url", side_effect=lambda url: url.split("/")[-1])
+    f = io.StringIO()
+    mm_main.single_file_recursive(
+        pid="root",
+        page_url="http://confluence/root",
+        f=f,
+        max_depth=3,
+        current_depth=1,
+        visited=None,
+        is_first=True,
+    )
+    output = f.getvalue()
+    # Check that each page's content appears in the output in the correct order
+    assert "# Root" in output
+    assert "Root content" in output
+    assert "# Child1" in output
+    assert "Child1 content" in output
+    assert "# Child2" in output
+    assert "Child2 content" in output
+    assert "# Grandchild1" in output
+    assert "Grandchild1 content" in output
+    # Check that the output is progressive (Root appears before Child1, etc.)
+    root_idx = output.index("# Root")
+    child1_idx = output.index("# Child1")
+    child2_idx = output.index("# Child2")
+    grandchild1_idx = output.index("# Grandchild1")
+    assert root_idx < child1_idx < grandchild1_idx
+    assert root_idx < child2_idx

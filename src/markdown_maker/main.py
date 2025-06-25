@@ -1,8 +1,10 @@
 """Main entry point for the Markdown Maker CLI."""
 
+from collections.abc import Callable
+
 import click
-from bs4 import BeautifulSoup, Tag
 from atlassian.errors import ApiError
+from bs4 import BeautifulSoup, Tag
 
 from markdown_maker.clients.confluence_client import ConfluenceClient
 from markdown_maker.converters.html_to_markdown import convert_html_to_markdown
@@ -35,6 +37,105 @@ def sanitize_dirname(title: str) -> str:
     return name
 
 
+def write_markdown_page(f, title: str, page_url: str, markdown: str, is_first: bool = True) -> None:
+    """Write a Markdown page to a file-like object, with heading and source link."""
+    if not is_first:
+        f.write("\n\n---\n\n")
+    f.write(f"# {title}\n\n")
+    f.write(f"Source: [{page_url}]({page_url})\n\n")
+    f.write(markdown.strip())
+    f.write("\n")
+
+
+def recurse_children(
+    get_child_pages_fn,
+    parent_id: str,
+    parent_dir: str,
+    max_depth: int,
+    current_depth: int,
+    visited: set,
+    parent_title: str,
+    parent_context: str,
+    recurse_fn,
+) -> None:
+    """Recurse into child pages, calling recurse_fn for each."""
+    try:
+        child_pages = get_child_pages_fn(parent_id)
+    except ApiError as exc:
+        click.echo(f"Could not access child pages for {parent_context}: {exc}", err=True)
+        child_pages = []
+    for child in child_pages:
+        child_id = child.get("id")
+        child_title = child.get("title", "unknown")
+        try:
+            recurse_fn(
+                child_id,
+                parent_dir,
+                max_depth,
+                current_depth + 1,
+                visited,
+                parent_context=(
+                    f"child page '{child_title}' (id {child_id}) of parent "
+                    f"'{parent_title}' (id {parent_id}) at depth {current_depth + 1}"
+                ),
+            )
+        except ApiError as exc:
+            msg = (
+                f"Could not access child page '{child_title}' (id {child_id}) "
+                f"of parent '{parent_title}' (id {parent_id}) at depth {current_depth + 1}:\n"
+                f"{exc}"
+            )
+            click.echo(msg, err=True)
+        except Exception as exc:
+            msg = f"Unexpected error for child page '{child_title}' (id {child_id}):\n{exc}"
+            click.echo(msg, err=True)
+
+
+def recurse_embedded_links(
+    html: str,
+    parent_dir: str,
+    max_depth: int,
+    current_depth: int,
+    visited: set,
+    parent_title: str,
+    parent_id: str,
+    recurse_fn,
+) -> None:
+    """Recurse into embedded Confluence links in the HTML, calling recurse_fn for each."""
+    soup = BeautifulSoup(html, "html.parser")
+    for a in soup.find_all("a"):
+        if isinstance(a, Tag):
+            href = a.get("href")
+            if not isinstance(href, str):
+                continue
+            try:
+                embedded_page_id = extract_page_id_from_url(href)
+            except ValueError:
+                continue
+            try:
+                recurse_fn(
+                    embedded_page_id,
+                    parent_dir,
+                    max_depth,
+                    current_depth + 1,
+                    visited,
+                    parent_context=(
+                        f"embedded link '{href}' (extracted id {embedded_page_id}) "
+                        f"in page '{parent_title}' (id {parent_id}) at depth {current_depth + 1}"
+                    ),
+                )
+            except ApiError as exc:
+                msg = (
+                    f"Could not access embedded link '{href}' (extracted id {embedded_page_id}) "
+                    f"in page '{parent_title}' (id {parent_id}) at depth {current_depth + 1}:\n"
+                    f"{exc}"
+                )
+                click.echo(msg, err=True)
+            except Exception as exc:
+                msg = f"Unexpected error for embedded link '{href}' (extracted id {embedded_page_id}):\n{exc}"
+                click.echo(msg, err=True)
+
+
 def handle_recursive_conversion(
     page_id: str,
     output_dir: str,
@@ -43,101 +144,30 @@ def handle_recursive_conversion(
     visited: set | None = None,
     parent_context: str = "",
 ) -> None:
-    """Recursively fetch, convert, and save a page, its child pages, and embedded links.
-
-    Recursion stops when current_depth > max_depth.
-    Each page is saved as index.md in a directory named after the sanitized title.
-    Embedded Confluence links are also recursively converted,
-    mirroring the directory structure.
-    """
     if visited is None:
         visited = set()
-    if current_depth > max_depth or page_id in visited:
-        return
-    visited.add(page_id)
-    import os
-
-    context = parent_context or f"page id {page_id} at depth {current_depth}"
-    try:
-        client = ConfluenceClient()
-        page = client.get_page_content(page_id)
-        html = page.get("body", {}).get("storage", {}).get("value", "")
-        markdown = convert_html_to_markdown(html)
-        title = page.get("title", "confluence_page")
+    client = ConfluenceClient()
+    def handle_page(title: str, page_url: str, markdown: str, depth: int, parent_dir: str | None) -> str:
+        import os
         dir_name = sanitize_dirname(title)
-        page_dir = os.path.join(output_dir, dir_name)
+        page_dir = os.path.join(parent_dir, dir_name) if parent_dir else os.path.join(output_dir, dir_name)
         os.makedirs(page_dir, exist_ok=True)
         output_path = os.path.join(page_dir, "index.md")
         with open(output_path, "w", encoding="utf-8") as f:
             f.write(markdown)
-        # Fetch and recurse into child pages
-        try:
-            child_pages = client.get_child_pages(page_id)
-        except ApiError as exc:
-            click.echo(f"Could not access child pages for {context}: {exc}", err=True)
-            child_pages = []
-        for child in child_pages:
-            child_id = child.get("id")
-            child_title = child.get("title", "unknown")
-            try:
-                handle_recursive_conversion(
-                    child_id,
-                    page_dir,
-                    max_depth,
-                    current_depth + 1,
-                    visited,
-                    parent_context=(
-                        f"child page '{child_title}' (id {child_id}) of parent "
-                        f"'{title}' (id {page_id}) at depth {current_depth + 1}"
-                    ),
-                )
-            except ApiError as exc:
-                msg = (
-                    f"Could not access child page '{child_title}' (id {child_id}) "
-                    f"of parent '{title}' (id {page_id}) at depth {current_depth + 1}:\n"
-                    f"{exc}"
-                )
-                click.echo(msg, err=True)
-            except Exception as exc:
-                msg = f"Unexpected error for child page '{child_title}' (id {child_id}):\n{exc}"
-                click.echo(msg, err=True)
-        # Find embedded Confluence links in the HTML
-        soup = BeautifulSoup(html, "html.parser")
-        for a in soup.find_all("a"):
-            if isinstance(a, Tag):
-                href = a.get("href")
-                if not isinstance(href, str):
-                    continue
-                try:
-                    embedded_page_id = extract_page_id_from_url(href)
-                except ValueError:
-                    continue
-                try:
-                    handle_recursive_conversion(
-                        embedded_page_id,
-                        page_dir,
-                        max_depth,
-                        current_depth + 1,
-                        visited,
-                        parent_context=(
-                            f"embedded link '{href}' (extracted id {embedded_page_id}) "
-                            f"in page '{title}' (id {page_id}) at depth {current_depth + 1}"
-                        ),
-                    )
-                except ApiError as exc:
-                    msg = (
-                        f"Could not access embedded link '{href}' (extracted id {embedded_page_id}) "
-                        f"in page '{title}' (id {page_id}) at depth {current_depth + 1}:\n"
-                        f"{exc}"
-                    )
-                    click.echo(msg, err=True)
-                except Exception as exc:
-                    msg = f"Unexpected error for embedded link '{href}' (extracted id {embedded_page_id}):\n{exc}"
-                    click.echo(msg, err=True)
-    except ApiError as exc:
-        click.echo(f"Could not access {context}: {exc}", err=True)
-    except Exception as exc:
-        click.echo(f"Unexpected error for {context}: {exc}", err=True)
+        return page_dir
+    traverse_confluence_tree(
+        pid=page_id,
+        page_url=f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={page_id}",
+        max_depth=max_depth,
+        current_depth=current_depth,
+        visited=visited,
+        client=client,
+        handle_page=handle_page,
+        parent_context=parent_context,
+        parent_dir=None,
+        link_type="root",
+    )
 
 
 def collect_discovered_pages_single(page_id: str, url: str) -> list[tuple[str, str, str]]:
@@ -159,59 +189,161 @@ def collect_discovered_pages_recursive(page_id: str, url: str, max_depth: int) -
     client = ConfluenceClient()
     discovered = []
     visited = set()
-
-    def recurse(pid, current_url, depth):
-        if depth > max_depth or pid in visited:
-            return
-        visited.add(pid)
-        try:
-            page = client.get_page_content(pid)
-        except ApiError as exc:
-            click.echo(f"Could not access page id {pid}: {exc}", err=True)
-            return
-        html = page.get("body", {}).get("storage", {}).get("value", "")
-        markdown = convert_html_to_markdown(html)
-        title = page.get("title", "confluence_page")
-        discovered.append((title, current_url, markdown))
-        # Child pages
-        try:
-            children = client.get_child_pages(pid)
-        except Exception:
-            children = []
-        for child in children:
-            child_id = child.get("id")
-            child_url = f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={child_id}"
-            recurse(child_id, child_url, depth + 1)
-        # Embedded links
-        soup = BeautifulSoup(html, "html.parser")
-        for a in soup.find_all("a"):
-            if isinstance(a, Tag):
-                href = a.get("href")
-                if not isinstance(href, str):
-                    continue
-                try:
-                    embedded_page_id = extract_page_id_from_url(href)
-                except ValueError:
-                    continue
-                recurse(embedded_page_id, href, depth + 1)
-
-    recurse(page_id, url, 1)
+    def handle_page(title: str, page_url: str, markdown: str, depth: int, parent_dir: str | None) -> str:
+        discovered.append((title, page_url, markdown))
+        return ""
+    traverse_confluence_tree(
+        pid=page_id,
+        page_url=url,
+        max_depth=max_depth,
+        current_depth=1,
+        visited=visited,
+        client=client,
+        handle_page=handle_page,
+        link_type="root",
+        parent_dir=None,
+    )
     return discovered
 
 
-def _single_file_option(ctx, param, value):
-    # If --single-file is passed with no value, value is None but param is present in args
-    # If --single-file is passed with a value, value is the string
-    # If not passed, value is None
-    import sys
-    args = sys.argv
-    if '--single-file' in args:
-        idx = args.index('--single-file')
-        # If next arg exists and does not start with '-', treat as filename
-        if idx + 1 < len(args) and not args[idx + 1].startswith('-'):
-            return args[idx + 1]
-        return ''  # Flag present, no value
-    return None
+def single_file_recursive(
+    pid: str,
+    page_url: str,
+    f,
+    max_depth: int,
+    current_depth: int = 1,
+    visited: set | None = None,
+    is_first: bool = False,
+    parent_context: str = "",
+) -> None:
+    """Recursively write discovered pages to a single file as they are found (progressive write)."""
+    if visited is None:
+        visited = set()
+    client = ConfluenceClient()
+    first_page = True if is_first else False
+    def handle_page(title: str, url: str, markdown: str, depth: int, parent_dir: str | None) -> str:
+        nonlocal first_page
+        write_markdown_page(f, title, url, markdown, is_first=first_page)
+        first_page = False
+        return ""
+    traverse_confluence_tree(
+        pid=pid,
+        page_url=page_url,
+        max_depth=max_depth,
+        current_depth=current_depth,
+        visited=visited,
+        client=client,
+        handle_page=handle_page,
+        parent_context=parent_context,
+        parent_dir=None,
+        link_type="root",
+    )
+
+
+def traverse_confluence_tree(
+    pid: str,
+    page_url: str,
+    max_depth: int,
+    current_depth: int,
+    visited: set,
+    client: ConfluenceClient,
+    handle_page: Callable[[str, str, str, int, str | None], str],
+    parent_context: str = "",
+    parent_dir: str | None = None,
+    link_type: str = "root",
+    child_title: str | None = None,
+    parent_title: str | None = None,
+    parent_id: str | None = None,
+) -> None:
+    """Unified recursive traversal for Confluence page trees.
+
+    Args:
+        pid: The page ID to start from.
+        page_url: The URL of the current page.
+        max_depth: Maximum recursion depth.
+        current_depth: Current recursion depth.
+        visited: Set of visited page IDs.
+        client: ConfluenceClient instance.
+        handle_page: Callback to handle each discovered page. Returns the directory for children.
+        parent_context: Context string for error reporting.
+        parent_dir: Directory in which to create this page's directory (for multi-file output).
+    """
+    if current_depth > max_depth or pid in visited:
+        return
+    visited.add(pid)
+    try:
+        page = client.get_page_content(pid)
+    except ApiError as exc:
+        if link_type == "child":
+            context = (
+                f"child page '{child_title}' (id {pid}) of parent '{parent_title}' (id {parent_id}) at depth {current_depth}"  # noqa: E501
+            )
+            click.echo(f"Could not access {context}: {exc}", err=True)
+        elif link_type == "embedded":
+            # Try to extract the id for error context
+            try:
+                extracted_id = extract_page_id_from_url(page_url)
+                click.echo(
+                    f"Could not access embedded link '{page_url}' (extracted id {extracted_id}): {exc}",
+                    err=True,
+                )
+            except Exception:
+                click.echo(f"Could not access embedded link '{page_url}': {exc}", err=True)
+        else:
+            context = parent_context or f"page id {pid}"
+            click.echo(f"Could not access {context}: {exc}", err=True)
+        return
+    html = page.get("body", {}).get("storage", {}).get("value", "")
+    markdown = convert_html_to_markdown(html)
+    title = page.get("title", "confluence_page")
+    page_dir = handle_page(title, page_url, markdown, current_depth, parent_dir)
+    # Recurse children
+    try:
+        children = client.get_child_pages(pid)
+    except Exception:
+        children = []
+    for child in children:
+        child_id = child.get("id")
+        child_title = child.get("title", "unknown")
+        child_url = f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={child_id}"
+        traverse_confluence_tree(
+            child_id,
+            child_url,
+            max_depth,
+            current_depth + 1,
+            visited,
+            client,
+            handle_page,
+            parent_context=parent_context,
+            parent_dir=page_dir,
+            link_type="child",
+            child_title=child_title,
+            parent_title=title,
+            parent_id=pid,
+        )
+    # Recurse embedded links
+    soup = BeautifulSoup(html, "html.parser")
+    for a in soup.find_all("a"):
+        if isinstance(a, Tag):
+            href = a.get("href")
+            if not isinstance(href, str):
+                continue
+            try:
+                embedded_page_id = extract_page_id_from_url(href)
+            except ValueError:
+                continue
+            traverse_confluence_tree(
+                embedded_page_id,
+                href,
+                max_depth,
+                current_depth + 1,
+                visited,
+                client,
+                handle_page,
+                parent_context=parent_context,
+                parent_dir=page_dir,
+                link_type="embedded",
+            )
 
 
 @cli.command()
@@ -254,86 +386,6 @@ def convert(
     output_filename = sanitize_filename(title)
     output_path = os.path.join(output_dir, output_filename)
 
-    def write_page_to_file(f, title, page_url, markdown, is_first):
-        if not is_first:
-            f.write("\n\n---\n\n")
-        f.write(f"# {title}\n\n")
-        f.write(f"Source: [{page_url}]({page_url})\n\n")
-        f.write(markdown.strip())
-        f.write("\n")
-
-    def single_file_recursive(
-        pid: str,
-        page_url: str,
-        f,
-        max_depth: int,
-        current_depth: int = 1,
-        visited: set | None = None,
-        is_first: bool = False,
-        parent_context: str = "",
-    ) -> None:
-        if visited is None:
-            visited = set()
-        if current_depth > max_depth or pid in visited:
-            return
-        visited.add(pid)
-        try:
-            page = client.get_page_content(pid)
-        except ApiError as exc:
-            context = parent_context or f"page id {pid}"
-            click.echo(f"Could not access {context}: {exc}", err=True)
-            return
-        html = page.get("body", {}).get("storage", {}).get("value", "")
-        markdown = convert_html_to_markdown(html)
-        title = page.get("title", "confluence_page")
-        write_page_to_file(f, title, page_url, markdown, is_first)
-        # Child pages
-        try:
-            children = client.get_child_pages(pid)
-        except Exception:
-            children = []
-        for child in children:
-            child_id = child.get("id")
-            child_title = child.get("title", "unknown")
-            child_url = f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={child_id}"
-            single_file_recursive(
-                child_id,
-                child_url,
-                f,
-                max_depth,
-                current_depth + 1,
-                visited,
-                is_first=False,
-                parent_context=(
-                    f"child page '{child_title}' (id {child_id}) of parent "
-                    f"'{title}' (id {pid}) at depth {current_depth + 1}"
-                ),
-            )
-        # Embedded links
-        soup = BeautifulSoup(html, "html.parser")
-        for a in soup.find_all("a"):
-            if isinstance(a, Tag):
-                href = a.get("href")
-                if not isinstance(href, str):
-                    continue
-                try:
-                    embedded_page_id = extract_page_id_from_url(href)
-                except ValueError:
-                    continue
-                single_file_recursive(
-                    embedded_page_id,
-                    href,
-                    f,
-                    max_depth,
-                    current_depth + 1,
-                    visited,
-                    is_first=False,
-                    parent_context=(
-                        f"embedded link '{href}' (extracted id {embedded_page_id}) "
-                        f"in page '{title}' (id {pid}) at depth {current_depth + 1}"
-                    ),
-                )
-
     if single_file:
         if os.path.exists(output_path):
             click.echo(f"Warning: {output_path} already exists.", err=True)
@@ -354,8 +406,7 @@ def convert(
         click.echo(f"URL: {url}")
         click.echo(f"Output Directory: {output_dir}")
         click.echo(f"Recursive: {recursive}")
-        if recursive:
-            click.echo(f"Max Depth: {max_depth}")
+        click.echo(f"Max Depth: {max_depth}")
         return
     if recursive:
         handle_recursive_conversion(page_id, output_dir, max_depth)
