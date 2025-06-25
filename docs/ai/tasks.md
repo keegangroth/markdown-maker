@@ -90,9 +90,21 @@ This document outlines the step-by-step tasks required to build the MVP of the "
 - [ ] 7.6. Add warning messages for pages that cannot be accessed due to permissions, without stopping the entire process.
 - [ ] 7.7. Add end-to-end tests for the recursive conversion.
 
-## Phase 8: Final Touches
+## Phase 8: Single File Output Option
 
-- [ ] 8.1. Implement progress indication for conversions taking longer than 15 seconds (e.g., a simple "Converting page X...")
-- [ ] 8.2. Review all error handling and ensure messages are user-friendly.
-- [ ] 8.3. Update the `README.md` with final usage instructions and examples.
-- [ ] 8.4. Manually test the CLI in a real-world scenario.
+- [ ] 8.1. Add a CLI option to download all discovered pages (from recursive or single-page conversion) into a single Markdown file instead of separate files.
+    - When this option is enabled, concatenate the Markdown content of all pages in the order they are discovered.
+    - Insert clear page breaks or headings between each page's content, including the page title and source URL.
+    - Ensure this option works with both single-page and recursive conversions.
+    - Add tests to verify correct concatenation, ordering, and formatting of the combined Markdown file.
+
+## Phase 9: Final Touches
+
+- [ ] 9.1. Implement progress indication for conversions taking longer than 15 seconds (e.g., a simple "Converting page X...")
+- [ ] 9.2. Review all error handling and ensure messages are user-friendly.
+- [ ] 9.3. Update the `README.md` with final usage instructions and examples.
+- [ ] 9.4. Manually test the CLI in a real-world scenario.
+- [ ] 9.5. Add an option to automatically zip all produced Markdown files (single or multiple) into a single archive for easy sharing after conversion is complete.
+    - The zip file should include all generated Markdown files and preserve directory structure.
+    - Ensure this works for both single-file and multi-file output modes.
+    - Add tests to verify correct zipping and archive contents.
