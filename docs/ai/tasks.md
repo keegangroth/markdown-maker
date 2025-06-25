@@ -87,13 +87,13 @@ This document outlines the step-by-step tasks required to build the MVP of the "
     - Child pages should be subdirectories within their parent’s directory, each with their own `index.md`.
     - Ensure directory names are sanitized and unique.
     - Update tests to verify the new output structure.
-- [ ] 7.5. Implement recursion into embedded Confluence links:
+- [x] 7.5. Implement recursion into embedded Confluence links:
     - For each page, find any embedded Confluence links within the page content (e.g., links to other Confluence pages embedded in the body).
     - Recursively convert and save those linked pages as well, using the same output structure as the page where the link was found.
     - Recursion into embedded links must respect the `--max-depth` limit.
     - Avoid redundant downloads and conversions: do not fetch or convert the same page more than once per run.
-- [ ] 7.6. Implement relative link rewriting. After all pages are converted, iterate through the generated Markdown files and replace Confluence URL links with relative links to the corresponding local files (for both child and embedded pages).
-- [ ] 7.7. Add warning messages for pages that cannot be accessed due to permissions, without stopping the entire process.
+- [ ] 7.6. Add warning messages for pages that cannot be accessed due to permissions, without stopping the entire process.
+- [ ] 7.7. Implement relative link rewriting. After all pages are converted, iterate through the generated Markdown files and replace Confluence URL links with relative links to the corresponding local files (for both child and embedded pages).
 - [ ] 7.8. Add end-to-end tests for the recursive conversion.
 
 ## Phase 8: Single File Output Option
