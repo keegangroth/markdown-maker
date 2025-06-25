@@ -35,7 +35,10 @@ def sanitize_dirname(title: str) -> str:
 
 
 def handle_recursive_conversion(
-    page_id: str, output_dir: str, max_depth: int, current_depth: int = 1,
+    page_id: str,
+    output_dir: str,
+    max_depth: int,
+    current_depth: int = 1,
     visited: set | None = None,
     parent_context: str = "",
 ) -> None:
@@ -52,6 +55,8 @@ def handle_recursive_conversion(
         return
     visited.add(page_id)
     import os
+
+    import click
     from atlassian.errors import ApiError
 
     context = parent_context or f"page id {page_id} at depth {current_depth}"
@@ -71,22 +76,36 @@ def handle_recursive_conversion(
         try:
             child_pages = client.get_child_pages(page_id)
         except ApiError as exc:
-            raise RuntimeError(
-                f"Failed to fetch child pages for {context}: {exc}"
-            ) from exc
+            click.echo(f"Could not access child pages for {context}: {exc}", err=True)
+            child_pages = []
         for child in child_pages:
             child_id = child.get("id")
             child_title = child.get("title", "unknown")
             try:
                 handle_recursive_conversion(
-                    child_id, page_dir, max_depth, current_depth + 1, visited,
-                    parent_context=f"child page '{child_title}' (id {child_id}) of parent '{title}' (id {page_id}) at depth {current_depth + 1}"
+                    child_id,
+                    page_dir,
+                    max_depth,
+                    current_depth + 1,
+                    visited,
+                    parent_context=(
+                        f"child page '{child_title}' (id {child_id}) of parent "
+                        f"'{title}' (id {page_id}) at depth {current_depth + 1}"
+                    ),
                 )
             except ApiError as exc:
-                raise RuntimeError(
-                    f"Failed to recursively convert child page '{child_title}' (id {child_id}) "
-                    f"of parent '{title}' (id {page_id}) at depth {current_depth + 1}: {exc}"
-                ) from exc
+                msg = (
+                    f"Could not access child page '{child_title}' (id {child_id}) "
+                    f"of parent '{title}' (id {page_id}) at depth {current_depth + 1}:\n"
+                    f"{exc}"
+                )
+                click.echo(msg, err=True)
+            except Exception as exc:
+                msg = (
+                    f"Unexpected error for child page '{child_title}' (id {child_id}):\n"
+                    f"{exc}"
+                )
+                click.echo(msg, err=True)
         # Find embedded Confluence links in the HTML
         soup = BeautifulSoup(html, "html.parser")
         for a in soup.find_all("a"):
@@ -100,16 +119,33 @@ def handle_recursive_conversion(
                     continue
                 try:
                     handle_recursive_conversion(
-                        embedded_page_id, page_dir, max_depth, current_depth + 1, visited,
-                        parent_context=f"embedded link '{href}' (extracted id {embedded_page_id}) in page '{title}' (id {page_id}) at depth {current_depth + 1}"
+                        embedded_page_id,
+                        page_dir,
+                        max_depth,
+                        current_depth + 1,
+                        visited,
+                        parent_context=(
+                            f"embedded link '{href}' (extracted id {embedded_page_id}) "
+                            f"in page '{title}' (id {page_id}) at depth {current_depth + 1}"
+                        ),
                     )
                 except ApiError as exc:
-                    raise RuntimeError(
-                        f"Failed to recursively convert embedded link '{href}' (extracted id {embedded_page_id}) "
-                        f"in page '{title}' (id {page_id}) at depth {current_depth + 1}: {exc}"
-                    ) from exc
+                    msg = (
+                        f"Could not access embedded link '{href}' (extracted id {embedded_page_id}) "
+                        f"in page '{title}' (id {page_id}) at depth {current_depth + 1}:\n"
+                        f"{exc}"
+                    )
+                    click.echo(msg, err=True)
+                except Exception as exc:
+                    msg = (
+                        f"Unexpected error for embedded link '{href}' (extracted id {embedded_page_id}):\n"
+                        f"{exc}"
+                    )
+                    click.echo(msg, err=True)
     except ApiError as exc:
-        raise RuntimeError(f"Failed to fetch {context}: {exc}") from exc
+        click.echo(f"Could not access {context}: {exc}", err=True)
+    except Exception as exc:
+        click.echo(f"Unexpected error for {context}: {exc}", err=True)
 
 
 @cli.command()

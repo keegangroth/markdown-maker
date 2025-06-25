@@ -34,9 +34,8 @@ def test_recursive_creates_nested_directories(
     tmp_path: Path, mocker, dummy_page_with_children
 ):
     """Test that recursive conversion creates nested directories and index.md files."""
-    valid_url = (
-        "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=42"
-    )
+    valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=42"
+
     # Patch ConfluenceClient.get_page_content to return dummy page or children
     def get_page_content_side_effect(page_id):
         if page_id == "42":
@@ -85,9 +84,7 @@ def test_recursive_creates_nested_directories(
     assert "# Parent" in parent_index.read_text()
     child1_dir = parent_dir / "child_one"
     child2_dir = parent_dir / "child_two"
-    for child_dir, child_title in zip(
-        [child1_dir, child2_dir], ["Child 1", "Child 2"]
-    ):
+    for child_dir, child_title in zip([child1_dir, child2_dir], ["Child 1", "Child 2"]):
         assert child_dir.exists() and child_dir.is_dir()
         child_index = child_dir / "index.md"
         assert child_index.exists()

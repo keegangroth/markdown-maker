@@ -36,7 +36,7 @@ markdown-maker = "markdown_maker.main:cli"
 where = ["src"]
 
 [tool.ruff]
-line-length = 88
+line-length = 120
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "UP"]

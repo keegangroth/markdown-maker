@@ -15,11 +15,11 @@ def dummy_page_with_embedded_links():
         "body": {
             "storage": {
                 "value": (
-                    '<h1>Parent</h1>'
+                    "<h1>Parent</h1>"
                     '<a href="https://company.atlassian.net/wiki/pages/viewpage.action?pageId=1111">'
-                    'Embedded 1</a>'
+                    "Embedded 1</a>"
                     '<a href="https://company.atlassian.net/wiki/pages/viewpage.action?pageId=2222">'
-                    'Embedded 2</a>'
+                    "Embedded 2</a>"
                 )
             }
         },
@@ -43,9 +43,7 @@ def test_embedded_links_are_recursively_converted(
     tmp_path: Path, mocker, dummy_page_with_embedded_links, embedded_page
 ):
     """Test that embedded Confluence links are detected and recursively converted."""
-    valid_url = (
-        "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=42"
-    )
+    valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=42"
     # Map page_id to page data
     page_map = {
         "42": dummy_page_with_embedded_links,
@@ -106,9 +104,7 @@ def test_embedded_links_respect_max_depth(
     tmp_path: Path, mocker, dummy_page_with_embedded_links, embedded_page
 ):
     """Test that recursion into embedded links respects the max_depth limit."""
-    valid_url = (
-        "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=42"
-    )
+    valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=42"
     page_map = {
         "42": dummy_page_with_embedded_links,
         "1111": embedded_page("1111", "Embedded One", "Embedded 1"),
