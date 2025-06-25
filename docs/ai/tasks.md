@@ -46,15 +46,14 @@ This document outlines the step-by-step tasks required to build the MVP of the "
 - [x] 4.4. Implement a method `get_page_content(page_id: str) -> dict` that fetches a page's content from the Confluence REST API using the `atlassian-python-api` client.
 - [x] 4.5. Implement a method `get_child_pages(page_id: str) -> list` that fetches the direct child pages of a given page.
 - [x] 4.6. Implement a utility in `src/markdown_maker/utils/helpers.py` to extract the `page_id` from a Confluence URL.
-- [ ] 4.7. Add robust error handling for API requests (e.g., 404 Not Found, 401 Unauthorized).
-- [ ] 4.8. Add unit tests for the `ConfluenceClient` using `pytest-mock` to mock `requests`.
+- [x] 4.7. Check for robust error handling for API requests (e.g., 404 Not Found, 401 Unauthorized). `atlassian-python-api` raises HTTPError which do not need to be modified.
+- [x] 4.8. Review unit tests to ensure they cover all scenarios
 
 ## Phase 5: HTML to Markdown Conversion
 
-- [ ] 5.1. Create `src/markdown_maker/converters/html_to_markdown.py`.
-- [ ] 5.2. Implement a function `convert_html_to_markdown(html: str) -> str` that uses `markdownify` and `BeautifulSoup` to perform the conversion.
-- [ ] 5.3. The function should be configured to handle basic formatting (headings, lists, bold, italics, code blocks).
-- [ ] 5.4. Add unit tests for the conversion function with sample HTML snippets.
+- [x] 5.1. Create `src/markdown_maker/converters/html_to_markdown.py` and implement a function `convert_html_to_markdown(html: str) -> str` that uses `markdownify` and `BeautifulSoup` to perform the conversion.
+- [x] 5.2. The function should be configured to handle basic formatting (headings, lists, bold, italics, code blocks).
+- [x] 5.3. Add unit tests for the conversion function with sample HTML snippets.
 
 ## Phase 6: Single-Page Conversion Logic
 
