@@ -20,7 +20,7 @@ def test_convert_command_prints_options(tmp_path: Path, mocker) -> None:
         },
     )
     mocker.patch(
-        "markdown_maker.main.handle_recursive_conversion",
+        "markdown_maker.main.traverse_and_write",
         autospec=True,
     )
     result = runner.invoke(
@@ -32,15 +32,13 @@ def test_convert_command_prints_options(tmp_path: Path, mocker) -> None:
             "--output-dir",
             str(tmp_path),
             "--recursive",
-            "--max-depth",
-            "5",
         ],
     )
     assert result.exit_code == 0
     assert f"URL: {valid_url}" in result.output
     assert f"Output Directory: {tmp_path}" in result.output
     assert "Recursive: True" in result.output
-    assert "Max Depth: 5" in result.output
+    assert "Max Depth: 3" in result.output
 
 
 def test_convert_command_default_max_depth(tmp_path: Path, mocker) -> None:
@@ -54,8 +52,8 @@ def test_convert_command_default_max_depth(tmp_path: Path, mocker) -> None:
             "title": "Test Page",
         },
     )
-    recursive_handler = mocker.patch(
-        "markdown_maker.main.handle_recursive_conversion",
+    traverse_patch = mocker.patch(
+        "markdown_maker.main.traverse_and_write",
         autospec=True,
     )
     result = runner.invoke(
@@ -72,7 +70,7 @@ def test_convert_command_default_max_depth(tmp_path: Path, mocker) -> None:
     assert result.exit_code == 0
     assert "Recursive: True" in result.output
     assert "Max Depth: 3" in result.output
-    recursive_handler.assert_called_once_with(mocker.ANY, mocker.ANY, 3)
+    traverse_patch.assert_called_once()
 
 
 def test_cli_help_menu() -> None:

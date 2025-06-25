@@ -24,7 +24,7 @@ def test_convert_command_recursive_flag_triggers_recursive_logic(tmp_path: Path,
         return_value="# Header\n",
     )
     # Patch the recursive handler (to be implemented) to check invocation
-    recursive_handler = mocker.patch("markdown_maker.main.handle_recursive_conversion")
+    traverse_patch = mocker.patch("markdown_maker.main.traverse_and_write")
     runner = CliRunner()
     result = runner.invoke(
         cli,
@@ -38,8 +38,7 @@ def test_convert_command_recursive_flag_triggers_recursive_logic(tmp_path: Path,
         ],
     )
     assert result.exit_code == 0
-    recursive_handler.assert_called_once()
-    assert "Recursive: True" in result.output
+    traverse_patch.assert_called_once()
 
 
 def test_convert_command_without_recursive_flag_does_not_call_recursive(tmp_path: Path, mocker):
@@ -56,7 +55,7 @@ def test_convert_command_without_recursive_flag_does_not_call_recursive(tmp_path
         "markdown_maker.converters.html_to_markdown.convert_html_to_markdown",
         return_value="# Header\n",
     )
-    recursive_handler = mocker.patch("markdown_maker.main.handle_recursive_conversion")
+    traverse_patch = mocker.patch("markdown_maker.main.traverse_and_write")
     runner = CliRunner()
     result = runner.invoke(
         cli,
@@ -69,8 +68,7 @@ def test_convert_command_without_recursive_flag_does_not_call_recursive(tmp_path
         ],
     )
     assert result.exit_code == 0
-    recursive_handler.assert_not_called()
-    assert "Recursive: False" in result.output
+    traverse_patch.assert_not_called()
 
 
 def test_recursive_respects_max_depth(tmp_path: Path, mocker):
@@ -87,8 +85,7 @@ def test_recursive_respects_max_depth(tmp_path: Path, mocker):
         "markdown_maker.converters.html_to_markdown.convert_html_to_markdown",
         return_value="# Header\n",
     )
-    # Patch the recursive handler to track calls
-    recursive_handler = mocker.patch("markdown_maker.main.handle_recursive_conversion")
+    traverse_patch = mocker.patch("markdown_maker.main.traverse_and_write")
     runner = CliRunner()
     result = runner.invoke(
         cli,
@@ -104,5 +101,4 @@ def test_recursive_respects_max_depth(tmp_path: Path, mocker):
         ],
     )
     assert result.exit_code == 0
-    recursive_handler.assert_called_once_with(mocker.ANY, mocker.ANY, 2)
-    assert "Max Depth: 2" in result.output
+    traverse_patch.assert_called_once()

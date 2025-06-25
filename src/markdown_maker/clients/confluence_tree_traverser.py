@@ -11,6 +11,7 @@ from markdown_maker.utils.helpers import extract_page_id_from_url
 
 class ConfluenceTreeTraverser:
     """Encapsulates recursive traversal state and logic for Confluence page trees."""
+
     def __init__(
         self,
         client: ConfluenceClient,
@@ -26,7 +27,8 @@ class ConfluenceTreeTraverser:
         self.parent_dir = parent_dir
         self.visited: set[str] = set()
 
-    def traverse(self,
+    def traverse(
+        self,
         pid: str,
         page_url: str,
         current_depth: int = 1,
@@ -53,9 +55,7 @@ class ConfluenceTreeTraverser:
 
     def _handle_error(self, exc, link_type, pid, page_url, current_depth, child_title, parent_title, parent_id):
         if link_type == "child":
-            context = (
-                f"child page '{child_title}' (id {pid}) of parent '{parent_title}' (id {parent_id}) at depth {current_depth}"  # noqa: E501
-            )
+            context = f"child page '{child_title}' (id {pid}) of parent '{parent_title}' (id {parent_id}) at depth {current_depth}"  # noqa: E501
             click.echo(f"Could not access {context}: {exc}", err=True)
         elif link_type == "embedded":
             try:

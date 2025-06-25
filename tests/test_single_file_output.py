@@ -4,7 +4,6 @@ These tests verify that when the --single-file option is used, all discovered pa
 are concatenated into a single Markdown file with correct page breaks, headings, and ordering.
 """
 
-import io
 from pathlib import Path
 
 import pytest
@@ -73,13 +72,8 @@ def test_single_file_output_single_page(tmp_path: Path, mocker, dummy_single_pag
 def test_single_file_output_recursive(tmp_path: Path, mocker, dummy_recursive_pages):
     """Test --single-file outputs a single Markdown file for recursive conversion."""
     valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=1"
-    # Patch recursive handler to simulate discovered pages in order
-    mocker.patch(
-        "markdown_maker.main.handle_recursive_conversion",
-        return_value=None,
-    )
 
-    # Patch ConfluenceClient.get_page_content to return parent/child by id
+    # Patch traverse_and_write to simulate discovered pages in order
     def get_page_content_side_effect(page_id):
         for page in dummy_recursive_pages:
             if page["id"] == page_id:
@@ -98,7 +92,6 @@ def test_single_file_output_recursive(tmp_path: Path, mocker, dummy_recursive_pa
         .replace("</h2>", ""),
     )
 
-    # Patch get_child_pages to simulate parent->child relationship
     def get_child_pages_side_effect(page_id):
         if page_id == "1":
             return [dummy_recursive_pages[1]]
@@ -193,10 +186,11 @@ def make_mock_page(page_id, title, html, children=None):
 
 
 def test_single_file_recursive_progressive_write(mocker):
-    """Test that single_file_recursive writes each page as soon as it is discovered (progressive write)."""
+    """Test that traverse_and_write writes each page as soon as it is discovered (progressive write)."""
+    import tempfile
+
     import markdown_maker.main as mm_main
 
-    # Create page dicts only (no nested tuples)
     root = {
         "id": "root",
         "title": "Root",
@@ -209,7 +203,6 @@ def test_single_file_recursive_progressive_write(mocker):
         "title": "Grandchild1",
         "body": {"storage": {"value": "<p>Grandchild1 content</p>"}},
     }
-    # pages[pid] = (page_dict, [child_page_dict, ...])
     pages = {
         "root": (root, [child1, child2]),
         "child1": (child1, [grandchild1]),
@@ -233,17 +226,19 @@ def test_single_file_recursive_progressive_write(mocker):
     )
     mocker.patch("markdown_maker.main.convert_html_to_markdown", side_effect=lambda x: x)
     mocker.patch("markdown_maker.main.extract_page_id_from_url", side_effect=lambda url: url.split("/")[-1])
-    f = io.StringIO()
-    mm_main.single_file_recursive(
-        pid="root",
-        page_url="http://confluence/root",
-        f=f,
+    with tempfile.NamedTemporaryFile("w+", delete=False, encoding="utf-8") as tmpfile:
+        output_path = tmpfile.name
+    mm_main.traverse_and_write(
+        page_id="root",
+        url="http://confluence/root",
+        output_dir=None,
         max_depth=3,
-        current_depth=1,
-        visited=None,
-        is_first=True,
+        single_file=True,
+        output_path=output_path,
+        parent_context="",
     )
-    output = f.getvalue()
+    with open(output_path, encoding="utf-8") as src:
+        output = src.read()
     # Check that each page's content appears in the output in the correct order
     assert "# Root" in output
     assert "Root content" in output
@@ -253,7 +248,6 @@ def test_single_file_recursive_progressive_write(mocker):
     assert "Child2 content" in output
     assert "# Grandchild1" in output
     assert "Grandchild1 content" in output
-    # Check that the output is progressive (Root appears before Child1, etc.)
     root_idx = output.index("# Root")
     child1_idx = output.index("# Child1")
     child2_idx = output.index("# Child2")

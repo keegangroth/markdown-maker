@@ -1,12 +1,11 @@
 """Main entry point for the Markdown Maker CLI."""
 
-
 import click
-from typing import Optional
 
 from markdown_maker.clients.confluence_client import ConfluenceClient
 from markdown_maker.clients.confluence_tree_traverser import ConfluenceTreeTraverser
 from markdown_maker.converters.html_to_markdown import convert_html_to_markdown
+from markdown_maker.utils.handlers import make_handle_page_multi, make_handle_page_single
 from markdown_maker.utils.helpers import extract_page_id_from_url
 
 
@@ -26,90 +25,39 @@ def sanitize_filename(title: str) -> str:
     return f"{name}.md"
 
 
-def sanitize_dirname(title: str) -> str:
-    """Sanitize a page title to create a valid directory name."""
-    import re
-
-    name = title.lower()
-    name = re.sub(r"[^a-z0-9]+", "_", name)
-    name = re.sub(r"_+", "_", name).strip("_")
-    return name
-
-
-def write_markdown_page(f, title: str, page_url: str, markdown: str, is_first: bool = True) -> None:
-    """Write a Markdown page to a file-like object, with heading and source link."""
-    if not is_first:
-        f.write("\n\n---\n\n")
-    f.write(f"# {title}\n\n")
-    f.write(f"Source: [{page_url}]({page_url})\n\n")
-    f.write(markdown.strip())
-    f.write("\n")
-
-
 def traverse_and_write(
     page_id: str,
     url: str,
-    output_dir: Optional[str] = None,
+    output_dir: str | None = None,
     max_depth: int = 3,
     single_file: bool = False,
-    output_path: Optional[str] = None,
+    output_path: str | None = None,
     parent_context: str = "",
 ) -> None:
     """Unified recursive traversal for both single-file and multi-file output modes."""
-    client = ConfluenceClient()
     if single_file:
-        if output_path is None:
+        if not output_path:
             raise ValueError("output_path must be provided for single_file mode.")
-        first_page = True
-
-        def handle_page(title: str, page_url: str, markdown: str, depth: int, parent_dir: str | None) -> str:
-            nonlocal first_page
-            with open(output_path, "a", encoding="utf-8") as f:
-                write_markdown_page(f, title, page_url, markdown, is_first=first_page)
-            first_page = False
-            return ""
-
-        traverser = ConfluenceTreeTraverser(
-            client=client,
-            max_depth=max_depth,
-            handle_page=handle_page,
-            parent_context=parent_context,
-        )
         # Truncate file before writing
         with open(output_path, "w", encoding="utf-8"):
             pass
-        traverser.traverse(
-            pid=page_id,
-            page_url=url,
-            current_depth=1,
-        )
+        handler = make_handle_page_single(output_path)
     else:
-        if output_dir is None:
+        if not output_dir:
             raise ValueError("output_dir must be provided for multi-file mode.")
-
-        def handle_page(title: str, page_url: str, markdown: str, depth: int, parent_dir: str | None) -> str:
-            import os
-
-            dir_name = sanitize_dirname(title)
-            page_dir = os.path.join(parent_dir, dir_name) if parent_dir else os.path.join(output_dir, dir_name)
-            os.makedirs(page_dir, exist_ok=True)
-            out_path = os.path.join(page_dir, "index.md")
-            with open(out_path, "w", encoding="utf-8") as f:
-                f.write(markdown)
-            return page_dir
-
-        traverser = ConfluenceTreeTraverser(
-            client=client,
-            max_depth=max_depth,
-            handle_page=handle_page,
-            parent_context=parent_context,
-            parent_dir=None,
-        )
-        traverser.traverse(
-            pid=page_id,
-            page_url=f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={page_id}",
-            current_depth=1,
-        )
+        handler = make_handle_page_multi(output_dir)
+    traverser = ConfluenceTreeTraverser(
+        client=ConfluenceClient(),
+        max_depth=max_depth,
+        handle_page=handler,
+        parent_context=parent_context,
+        parent_dir=None,
+    )
+    traverser.traverse(
+        pid=page_id,
+        page_url=url if single_file else f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={page_id}",
+        current_depth=1,
+    )
 
 
 @cli.command()

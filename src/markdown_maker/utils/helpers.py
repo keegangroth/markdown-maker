@@ -29,3 +29,13 @@ def extract_page_id_from_url(url: str) -> str:
     if match:
         return match.group(1)
     raise ValueError(f"Could not extract page_id from URL: {url}")
+
+
+def sanitize_dirname(title: str) -> str:
+    """Sanitize a page title to create a valid directory name."""
+    import re
+
+    name = title.lower()
+    name = re.sub(r"[^a-z0-9]+", "_", name)
+    name = re.sub(r"_+", "_", name).strip("_")
+    return name
