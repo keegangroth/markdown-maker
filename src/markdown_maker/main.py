@@ -23,36 +23,44 @@ def sanitize_filename(title: str) -> str:
     return f"{name}.md"
 
 
+def sanitize_dirname(title: str) -> str:
+    """Sanitize a page title to create a valid directory name."""
+    import re
+
+    name = title.lower()
+    name = re.sub(r"[^a-z0-9]+", "_", name)
+    name = re.sub(r"_+", "_", name).strip("_")
+    return name
+
+
 def handle_recursive_conversion(
     page_id: str, output_dir: str, max_depth: int, current_depth: int = 1
 ) -> None:
     """Recursively fetch, convert, and save a page and its child pages.
 
     Recursion stops when current_depth > max_depth.
+    Each page is saved as index.md in a directory named after the sanitized title.
     """
     if current_depth > max_depth:
         return
+    import os
+
     client = ConfluenceClient()
     page = client.get_page_content(page_id)
     html = page.get("body", {}).get("storage", {}).get("value", "")
     markdown = convert_html_to_markdown(html)
     title = page.get("title", "confluence_page")
-    filename = sanitize_filename(title)
-    import os
-
-    os.makedirs(output_dir, exist_ok=True)
-    output_path = os.path.join(output_dir, filename)
+    dir_name = sanitize_dirname(title)
+    page_dir = os.path.join(output_dir, dir_name)
+    os.makedirs(page_dir, exist_ok=True)
+    output_path = os.path.join(page_dir, "index.md")
     with open(output_path, "w", encoding="utf-8") as f:
         f.write(markdown)
     # Fetch and recurse into child pages
     child_pages = client.get_child_pages(page_id)
     for child in child_pages:
         child_id = child.get("id")
-        child_title = child.get("title", "child_page")
-        child_dir = os.path.join(
-            output_dir, sanitize_filename(child_title).replace(".md", "")
-        )
-        handle_recursive_conversion(child_id, child_dir, max_depth, current_depth + 1)
+        handle_recursive_conversion(child_id, page_dir, max_depth, current_depth + 1)
 
 
 @cli.command()

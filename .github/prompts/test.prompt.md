@@ -38,6 +38,8 @@ which define what we are building and how we are building it:
     style guidelines.
 5.  **Fix Linting:**  If `ruff` reports any issues, fix them before proceeding.
     * Skip this step if there are no linting issues.
+    * Try once to use `ruff check --fix` or `ruff format .` to automatically
+      fix formatting issues.
 6.  **Explain Your Changes:** After successfully running tests and passing
     linting, explain what you have done:
     * Briefly summarize the changes you made.
