@@ -2,6 +2,7 @@
 
 
 import click
+from typing import Optional
 
 from markdown_maker.clients.confluence_client import ConfluenceClient
 from markdown_maker.clients.confluence_tree_traverser import ConfluenceTreeTraverser
@@ -44,66 +45,71 @@ def write_markdown_page(f, title: str, page_url: str, markdown: str, is_first: b
     f.write(markdown.strip())
     f.write("\n")
 
-def handle_recursive_conversion(
-    page_id: str,
-    output_dir: str,
-    max_depth: int,
-    current_depth: int = 1,
-    visited: set | None = None,
-    parent_context: str = "",
-) -> None:
-    client = ConfluenceClient()
-    def handle_page(title: str, page_url: str, markdown: str, depth: int, parent_dir: str | None) -> str:
-        import os
-        dir_name = sanitize_dirname(title)
-        page_dir = os.path.join(parent_dir, dir_name) if parent_dir else os.path.join(output_dir, dir_name)
-        os.makedirs(page_dir, exist_ok=True)
-        output_path = os.path.join(page_dir, "index.md")
-        with open(output_path, "w", encoding="utf-8") as f:
-            f.write(markdown)
-        return page_dir
-    traverser = ConfluenceTreeTraverser(
-        client=client,
-        max_depth=max_depth,
-        handle_page=handle_page,
-        parent_context=parent_context,
-        parent_dir=None,
-    )
-    traverser.traverse(
-        pid=page_id,
-        page_url=f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={page_id}",
-        current_depth=current_depth,
-    )
 
-def single_file_recursive(
-    pid: str,
-    page_url: str,
-    f,
-    max_depth: int,
-    current_depth: int = 1,
-    visited: set | None = None,
-    is_first: bool = False,
+def traverse_and_write(
+    page_id: str,
+    url: str,
+    output_dir: Optional[str] = None,
+    max_depth: int = 3,
+    single_file: bool = False,
+    output_path: Optional[str] = None,
     parent_context: str = "",
 ) -> None:
-    """Recursively write discovered pages to a single file as they are found (progressive write)."""
+    """Unified recursive traversal for both single-file and multi-file output modes."""
     client = ConfluenceClient()
-    first_page = True if is_first else False
-    def handle_page(title: str, url: str, markdown: str, depth: int, parent_dir: str | None) -> str:
-        nonlocal first_page
-        write_markdown_page(f, title, url, markdown, is_first=first_page)
-        first_page = False
-        return ""
-    traverser = ConfluenceTreeTraverser(
-        client=client,
-        max_depth=max_depth,
-        handle_page=handle_page,
-        parent_context=parent_context,
-    )
-    traverser.traverse(
-        pid=pid,
-        page_url=page_url,
-        current_depth=current_depth,
-    )
+    if single_file:
+        if output_path is None:
+            raise ValueError("output_path must be provided for single_file mode.")
+        first_page = True
+
+        def handle_page(title: str, page_url: str, markdown: str, depth: int, parent_dir: str | None) -> str:
+            nonlocal first_page
+            with open(output_path, "a", encoding="utf-8") as f:
+                write_markdown_page(f, title, page_url, markdown, is_first=first_page)
+            first_page = False
+            return ""
+
+        traverser = ConfluenceTreeTraverser(
+            client=client,
+            max_depth=max_depth,
+            handle_page=handle_page,
+            parent_context=parent_context,
+        )
+        # Truncate file before writing
+        with open(output_path, "w", encoding="utf-8"):
+            pass
+        traverser.traverse(
+            pid=page_id,
+            page_url=url,
+            current_depth=1,
+        )
+    else:
+        if output_dir is None:
+            raise ValueError("output_dir must be provided for multi-file mode.")
+
+        def handle_page(title: str, page_url: str, markdown: str, depth: int, parent_dir: str | None) -> str:
+            import os
+
+            dir_name = sanitize_dirname(title)
+            page_dir = os.path.join(parent_dir, dir_name) if parent_dir else os.path.join(output_dir, dir_name)
+            os.makedirs(page_dir, exist_ok=True)
+            out_path = os.path.join(page_dir, "index.md")
+            with open(out_path, "w", encoding="utf-8") as f:
+                f.write(markdown)
+            return page_dir
+
+        traverser = ConfluenceTreeTraverser(
+            client=client,
+            max_depth=max_depth,
+            handle_page=handle_page,
+            parent_context=parent_context,
+            parent_dir=None,
+        )
+        traverser.traverse(
+            pid=page_id,
+            page_url=f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={page_id}",
+            current_depth=1,
+        )
 
 
 @cli.command()
@@ -146,38 +152,31 @@ def convert(
     output_filename = sanitize_filename(title)
     output_path = os.path.join(output_dir, output_filename)
 
-    if single_file:
-        if os.path.exists(output_path):
+    if single_file or recursive:
+        if single_file and os.path.exists(output_path):
             click.echo(f"Warning: {output_path} already exists.", err=True)
             if not click.confirm(f"Overwrite {output_path}?", default=False):
                 click.echo("Aborted by user.", err=True)
                 return
-        with open(output_path, "w", encoding="utf-8") as f:
-            single_file_recursive(
-                page_id,
-                url,
-                f,
-                max_depth,
-                current_depth=1,
-                visited=None,
-                is_first=True,
-            )
-        click.echo(f"Saved: {output_path}")
+        traverse_and_write(
+            page_id=page_id,
+            url=url,
+            output_dir=output_dir,
+            max_depth=max_depth,
+            single_file=single_file,
+            output_path=output_path if single_file else None,
+        )
+        if single_file:
+            click.echo(f"Saved: {output_path}")
         click.echo(f"URL: {url}")
         click.echo(f"Output Directory: {output_dir}")
         click.echo(f"Recursive: {recursive}")
         click.echo(f"Max Depth: {max_depth}")
         return
-    if recursive:
-        handle_recursive_conversion(page_id, output_dir, max_depth)
-        click.echo(f"Recursive: {recursive}")
-        click.echo(f"Max Depth: {max_depth}")
-        click.echo(f"URL: {url}")
-        click.echo(f"Output Directory: {output_dir}")
-        return
+
+    # Default: single page, not recursive, not single-file
     html = page.get("body", {}).get("storage", {}).get("value", "")
     markdown = convert_html_to_markdown(html)
-    title = page.get("title", "confluence_page")
     filename = sanitize_filename(title)
     output_path = os.path.join(output_dir, filename)
     with open(output_path, "w", encoding="utf-8") as f:
