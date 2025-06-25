@@ -270,6 +270,7 @@ def convert(
         current_depth: int = 1,
         visited: set | None = None,
         is_first: bool = False,
+        parent_context: str = "",
     ) -> None:
         if visited is None:
             visited = set()
@@ -279,7 +280,8 @@ def convert(
         try:
             page = client.get_page_content(pid)
         except ApiError as exc:
-            click.echo(f"Could not access page id {pid}: {exc}", err=True)
+            context = parent_context or f"page id {pid}"
+            click.echo(f"Could not access {context}: {exc}", err=True)
             return
         html = page.get("body", {}).get("storage", {}).get("value", "")
         markdown = convert_html_to_markdown(html)
@@ -292,6 +294,7 @@ def convert(
             children = []
         for child in children:
             child_id = child.get("id")
+            child_title = child.get("title", "unknown")
             child_url = f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={child_id}"
             single_file_recursive(
                 child_id,
@@ -301,6 +304,10 @@ def convert(
                 current_depth + 1,
                 visited,
                 is_first=False,
+                parent_context=(
+                    f"child page '{child_title}' (id {child_id}) of parent "
+                    f"'{title}' (id {pid}) at depth {current_depth + 1}"
+                ),
             )
         # Embedded links
         soup = BeautifulSoup(html, "html.parser")
@@ -321,6 +328,10 @@ def convert(
                     current_depth + 1,
                     visited,
                     is_first=False,
+                    parent_context=(
+                        f"embedded link '{href}' (extracted id {embedded_page_id}) "
+                        f"in page '{title}' (id {pid}) at depth {current_depth + 1}"
+                    ),
                 )
 
     if single_file:

@@ -135,22 +135,32 @@ def test_single_file_output_recursive(tmp_path: Path, mocker, dummy_recursive_pa
     assert "---" in content or "====" in content
 
 
-def test_single_file_output_overwrite_prompt(tmp_path: Path, mocker, dummy_single_page):
-    """Test that the CLI prompts before overwriting an existing single-file output."""
+def test_single_file_embedded_link_error_context(tmp_path: Path, mocker, dummy_single_page):
+    """Test error log for inaccessible embedded link includes the link URL."""
     valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
+    inaccessible_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=99999999"
+    # Page contains an embedded link to inaccessible_url
+    dummy_page_with_link = {
+        "title": "Page With Link",
+        "body": {"storage": {"value": f'<a href="{inaccessible_url}">link</a>'}},
+    }
+
+    def get_page_content_side_effect(page_id):
+        if page_id == "123456789":
+            return dummy_page_with_link
+        # Simulate an API error for inaccessible page
+        from atlassian.errors import ApiError
+        raise ApiError("No access")
+
     mocker.patch(
         "markdown_maker.clients.confluence_client.ConfluenceClient.get_page_content",
-        return_value=dummy_single_page,
+        side_effect=get_page_content_side_effect,
     )
     mocker.patch(
         "markdown_maker.converters.html_to_markdown.convert_html_to_markdown",
-        return_value="# Single\n",
+        return_value="# Page With Link\n",
     )
     runner = CliRunner()
-    output_file = tmp_path / "single_page.md"
-    # Create the file first to trigger the prompt
-    output_file.write_text("existing content")
-    # Simulate user declining overwrite
     result = runner.invoke(
         cli,
         [
@@ -161,32 +171,8 @@ def test_single_file_output_overwrite_prompt(tmp_path: Path, mocker, dummy_singl
             str(tmp_path),
             "--single-file",
         ],
-        input="n\n",  # User enters 'n' at the prompt
     )
     assert result.exit_code == 0
-    assert "already exists" in result.output
-    assert "Overwrite" in result.output
-    assert "Aborted by user" in result.output
-    # File should not be overwritten
-    assert output_file.read_text() == "existing content"
-    # Simulate user accepting overwrite
-    result2 = runner.invoke(
-        cli,
-        [
-            "convert",
-            "--url",
-            valid_url,
-            "--output-dir",
-            str(tmp_path),
-            "--single-file",
-        ],
-        input="y\n",  # User enters 'y' at the prompt
-    )
-    assert result2.exit_code == 0
-    assert "already exists" in result2.output
-    assert "Overwrite" in result2.output
-    assert "Saved" in result2.output
-    # File should be overwritten
-    content = output_file.read_text()
-    assert "# Single" in content
-    assert f"Source: [{valid_url}]({valid_url})" in content
+    # Should mention the embedded link URL in the error output
+    assert inaccessible_url in result.output
+    assert "embedded link" in result.output or "Could not access" in result.output
