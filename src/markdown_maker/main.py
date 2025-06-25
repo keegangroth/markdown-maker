@@ -258,7 +258,7 @@ def convert(
         if not is_first:
             f.write("\n\n---\n\n")
         f.write(f"# {title}\n\n")
-        f.write(f"Source: {page_url}\n\n")
+        f.write(f"Source: [{page_url}]({page_url})\n\n")
         f.write(markdown.strip())
         f.write("\n")
 
@@ -324,6 +324,11 @@ def convert(
                 )
 
     if single_file:
+        if os.path.exists(output_path):
+            click.echo(f"Warning: {output_path} already exists.", err=True)
+            if not click.confirm(f"Overwrite {output_path}?", default=False):
+                click.echo("Aborted by user.", err=True)
+                return
         with open(output_path, "w", encoding="utf-8") as f:
             single_file_recursive(
                 page_id,

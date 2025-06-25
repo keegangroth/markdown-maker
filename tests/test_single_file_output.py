@@ -66,7 +66,7 @@ def test_single_file_output_single_page(tmp_path: Path, mocker, dummy_single_pag
     content = expected_filename.read_text()
     assert "# Single" in content
     assert "Single Page" in content  # Heading or break
-    assert valid_url in content
+    assert f"Source: [{valid_url}]({valid_url})" in content
 
 
 def test_single_file_output_recursive(tmp_path: Path, mocker, dummy_recursive_pages):
@@ -127,9 +127,66 @@ def test_single_file_output_recursive(tmp_path: Path, mocker, dummy_recursive_pa
     assert "## Child" in content
     assert "Parent Page" in content
     assert "Child Page" in content
-    assert valid_url in content
+    assert f"Source: [{valid_url}]({valid_url})" in content
     assert "pageId=2" in content
     # Check that parent comes before child
     assert content.index("Parent Page") < content.index("Child Page")
     # Check for clear page break (e.g., --- or similar)
     assert "---" in content or "====" in content
+
+
+def test_single_file_output_overwrite_prompt(tmp_path: Path, mocker, dummy_single_page):
+    """Test that the CLI prompts before overwriting an existing single-file output."""
+    valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
+    mocker.patch(
+        "markdown_maker.clients.confluence_client.ConfluenceClient.get_page_content",
+        return_value=dummy_single_page,
+    )
+    mocker.patch(
+        "markdown_maker.converters.html_to_markdown.convert_html_to_markdown",
+        return_value="# Single\n",
+    )
+    runner = CliRunner()
+    output_file = tmp_path / "single_page.md"
+    # Create the file first to trigger the prompt
+    output_file.write_text("existing content")
+    # Simulate user declining overwrite
+    result = runner.invoke(
+        cli,
+        [
+            "convert",
+            "--url",
+            valid_url,
+            "--output-dir",
+            str(tmp_path),
+            "--single-file",
+        ],
+        input="n\n",  # User enters 'n' at the prompt
+    )
+    assert result.exit_code == 0
+    assert "already exists" in result.output
+    assert "Overwrite" in result.output
+    assert "Aborted by user" in result.output
+    # File should not be overwritten
+    assert output_file.read_text() == "existing content"
+    # Simulate user accepting overwrite
+    result2 = runner.invoke(
+        cli,
+        [
+            "convert",
+            "--url",
+            valid_url,
+            "--output-dir",
+            str(tmp_path),
+            "--single-file",
+        ],
+        input="y\n",  # User enters 'y' at the prompt
+    )
+    assert result2.exit_code == 0
+    assert "already exists" in result2.output
+    assert "Overwrite" in result2.output
+    assert "Saved" in result2.output
+    # File should be overwritten
+    content = output_file.read_text()
+    assert "# Single" in content
+    assert f"Source: [{valid_url}]({valid_url})" in content
