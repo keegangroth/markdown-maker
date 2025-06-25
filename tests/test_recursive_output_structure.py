@@ -30,9 +30,7 @@ def dummy_page_with_children():
     }
 
 
-def test_recursive_creates_nested_directories(
-    tmp_path: Path, mocker, dummy_page_with_children
-):
+def test_recursive_creates_nested_directories(tmp_path: Path, mocker, dummy_page_with_children):
     """Test that recursive conversion creates nested directories and index.md files."""
     valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=42"
 
@@ -58,9 +56,7 @@ def test_recursive_creates_nested_directories(
     )
     mocker.patch(
         "markdown_maker.clients.confluence_client.ConfluenceClient.get_child_pages",
-        side_effect=lambda page_id: dummy_page_with_children["_children"]
-        if page_id == "42"
-        else [],
+        side_effect=lambda page_id: dummy_page_with_children["_children"] if page_id == "42" else [],
     )
     runner = CliRunner()
     result = runner.invoke(

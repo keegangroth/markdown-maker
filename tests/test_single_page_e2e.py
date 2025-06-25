@@ -18,9 +18,7 @@ def dummy_page():
 
 def test_single_page_e2e(tmp_path: Path, mocker, dummy_page):
     """End-to-end: CLI fetches, converts, and writes markdown for a single page."""
-    valid_url = (
-        "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
-    )
+    valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
     mocker.patch(
         "markdown_maker.clients.confluence_client.ConfluenceClient.get_page_content",
         return_value=dummy_page,

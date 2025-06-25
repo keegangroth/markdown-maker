@@ -14,9 +14,7 @@ def test_error_context_for_child_page(mocker, tmp_path):
     child_id = "1234"
     parent_title = "Parent Page"
     child_title = "Child One"
-    valid_url = (
-        f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={parent_id}"
-    )
+    valid_url = f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={parent_id}"
     parent_page = {
         "title": parent_title,
         "body": {"storage": {"value": "<h1>Parent</h1>"}},
@@ -54,9 +52,7 @@ def test_error_context_for_child_page(mocker, tmp_path):
         ],
     )
     assert result.exit_code == 0
-    assert (
-        f"Could not access child page '{child_title}' (id {child_id})" in result.stderr
-    )
+    assert f"Could not access child page '{child_title}' (id {child_id})" in result.stderr
     assert f"Page with id {child_id} not found." in result.stderr
     parent_dir = tmp_path / "parent_page"
     assert parent_dir.exists()
@@ -72,9 +68,7 @@ def test_error_context_for_embedded_link(mocker, tmp_path):
     parent_id = "42"
     embedded_id = "9999"
     parent_title = "Parent Page"
-    valid_url = (
-        f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={parent_id}"
-    )
+    valid_url = f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={parent_id}"
     parent_page = {
         "title": parent_title,
         "body": {
@@ -135,9 +129,7 @@ def test_child_page_error_logs_and_continues(mocker, tmp_path):
     child_id = "1234"
     parent_title = "Parent Page"
     child_title = "Child One"
-    valid_url = (
-        f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={parent_id}"
-    )
+    valid_url = f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={parent_id}"
     parent_page = {
         "title": parent_title,
         "body": {"storage": {"value": "<h1>Parent</h1>"}},
@@ -179,9 +171,7 @@ def test_child_page_error_logs_and_continues(mocker, tmp_path):
     assert parent_dir.exists()
     parent_index = parent_dir / "index.md"
     assert parent_index.exists()
-    assert (
-        f"Could not access child page '{child_title}' (id {child_id})" in result.stderr
-    )
+    assert f"Could not access child page '{child_title}' (id {child_id})" in result.stderr
     assert "Parent" in parent_index.read_text()
 
 
@@ -190,9 +180,7 @@ def test_embedded_link_error_logs_and_continues(mocker, tmp_path):
     parent_id = "42"
     embedded_id = "9999"
     parent_title = "Parent Page"
-    valid_url = (
-        f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={parent_id}"
-    )
+    valid_url = f"https://company.atlassian.net/wiki/pages/viewpage.action?pageId={parent_id}"
     parent_page = {
         "title": parent_title,
         "body": {

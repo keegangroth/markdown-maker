@@ -37,13 +37,9 @@ def test_extract_page_id_from_url_valid(url: str, expected: str) -> None:
 def test_extract_page_id_from_url_invalid() -> None:
     """Test extraction raises ValueError for invalid URLs."""
     with pytest.raises(ValueError):
-        extract_page_id_from_url(
-            "https://company.atlassian.net/wiki/spaces/SPACE/pages//Page+Title"
-        )
+        extract_page_id_from_url("https://company.atlassian.net/wiki/spaces/SPACE/pages//Page+Title")
     with pytest.raises(ValueError):
-        extract_page_id_from_url(
-            "https://company.atlassian.net/wiki/pages/viewpage.action"
-        )
+        extract_page_id_from_url("https://company.atlassian.net/wiki/pages/viewpage.action")
     with pytest.raises(ValueError):
         extract_page_id_from_url("not a url")
     with pytest.raises(ValueError):

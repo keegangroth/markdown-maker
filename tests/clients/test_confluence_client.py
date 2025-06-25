@@ -18,9 +18,7 @@ def test_confluence_client_loads_config(monkeypatch):
     def dummy_confluence_init(self, url, username, password, cloud):
         self.get_page_by_id = lambda page_id, expand=None: {}
 
-    monkeypatch.setattr(
-        "markdown_maker.clients.confluence_client.load_config", lambda: dummy_config
-    )
+    monkeypatch.setattr("markdown_maker.clients.confluence_client.load_config", lambda: dummy_config)
     monkeypatch.setattr(
         "markdown_maker.clients.confluence_client.Confluence.__init__",
         dummy_confluence_init,
@@ -52,9 +50,7 @@ def test_get_page_content_success(monkeypatch):
     def dummy_confluence_init(self, url, username, password, cloud):
         self.get_page_by_id = DummyConfluence().get_page_by_id
 
-    monkeypatch.setattr(
-        "markdown_maker.clients.confluence_client.load_config", lambda: dummy_config
-    )
+    monkeypatch.setattr("markdown_maker.clients.confluence_client.load_config", lambda: dummy_config)
     monkeypatch.setattr(
         "markdown_maker.clients.confluence_client.Confluence.__init__",
         dummy_confluence_init,
@@ -80,9 +76,7 @@ def test_get_page_content_not_found(monkeypatch):
     def dummy_confluence_init(self, url, username, password, cloud):
         self.get_page_by_id = DummyConfluence().get_page_by_id
 
-    monkeypatch.setattr(
-        "markdown_maker.clients.confluence_client.load_config", lambda: dummy_config
-    )
+    monkeypatch.setattr("markdown_maker.clients.confluence_client.load_config", lambda: dummy_config)
     monkeypatch.setattr(
         "markdown_maker.clients.confluence_client.Confluence.__init__",
         dummy_confluence_init,
@@ -113,9 +107,7 @@ def test_get_child_pages_success(monkeypatch):
     def dummy_confluence_init(self, url, username, password, cloud):
         self.get_child_pages = DummyConfluence().get_child_pages
 
-    monkeypatch.setattr(
-        "markdown_maker.clients.confluence_client.load_config", lambda: dummy_config
-    )
+    monkeypatch.setattr("markdown_maker.clients.confluence_client.load_config", lambda: dummy_config)
     monkeypatch.setattr(
         "markdown_maker.clients.confluence_client.Confluence.__init__",
         dummy_confluence_init,
@@ -141,9 +133,7 @@ def test_get_child_pages_empty(monkeypatch):
     def dummy_confluence_init(self, url, username, password, cloud):
         self.get_child_pages = DummyConfluence().get_child_pages
 
-    monkeypatch.setattr(
-        "markdown_maker.clients.confluence_client.load_config", lambda: dummy_config
-    )
+    monkeypatch.setattr("markdown_maker.clients.confluence_client.load_config", lambda: dummy_config)
     monkeypatch.setattr(
         "markdown_maker.clients.confluence_client.Confluence.__init__",
         dummy_confluence_init,
@@ -169,9 +159,7 @@ def test_get_child_pages_api_error(monkeypatch):
     def dummy_confluence_init(self, url, username, password, cloud):
         self.get_child_pages = DummyConfluence().get_child_pages
 
-    monkeypatch.setattr(
-        "markdown_maker.clients.confluence_client.load_config", lambda: dummy_config
-    )
+    monkeypatch.setattr("markdown_maker.clients.confluence_client.load_config", lambda: dummy_config)
     monkeypatch.setattr(
         "markdown_maker.clients.confluence_client.Confluence.__init__",
         dummy_confluence_init,

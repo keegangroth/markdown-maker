@@ -7,13 +7,9 @@ from click.testing import CliRunner
 from markdown_maker.main import cli
 
 
-def test_convert_command_recursive_flag_triggers_recursive_logic(
-    tmp_path: Path, mocker
-):
+def test_convert_command_recursive_flag_triggers_recursive_logic(tmp_path: Path, mocker):
     """Test that the --recursive flag triggers recursive logic (placeholder)."""
-    valid_url = (
-        "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
-    )
+    valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
     # Patch ConfluenceClient.get_page_content to avoid real API call
     mocker.patch(
         "markdown_maker.clients.confluence_client.ConfluenceClient.get_page_content",
@@ -46,13 +42,9 @@ def test_convert_command_recursive_flag_triggers_recursive_logic(
     assert "Recursive: True" in result.output
 
 
-def test_convert_command_without_recursive_flag_does_not_call_recursive(
-    tmp_path: Path, mocker
-):
+def test_convert_command_without_recursive_flag_does_not_call_recursive(tmp_path: Path, mocker):
     """Test that the recursive handler is not called if --recursive is not set."""
-    valid_url = (
-        "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
-    )
+    valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
     mocker.patch(
         "markdown_maker.clients.confluence_client.ConfluenceClient.get_page_content",
         return_value={
@@ -83,9 +75,7 @@ def test_convert_command_without_recursive_flag_does_not_call_recursive(
 
 def test_recursive_respects_max_depth(tmp_path: Path, mocker):
     """Test that recursion does not exceed the specified max_depth."""
-    valid_url = (
-        "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
-    )
+    valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
     mocker.patch(
         "markdown_maker.clients.confluence_client.ConfluenceClient.get_page_content",
         return_value={

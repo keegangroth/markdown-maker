@@ -91,18 +91,14 @@ def test_embedded_links_are_recursively_converted(
     assert "# Parent" in parent_index.read_text()
     embedded1_dir = parent_dir / "embedded_one"
     embedded2_dir = parent_dir / "embedded_two"
-    for emb_dir, emb_title in zip(
-        [embedded1_dir, embedded2_dir], ["Embedded 1", "Embedded 2"]
-    ):
+    for emb_dir, emb_title in zip([embedded1_dir, embedded2_dir], ["Embedded 1", "Embedded 2"]):
         assert emb_dir.exists() and emb_dir.is_dir()
         emb_index = emb_dir / "index.md"
         assert emb_index.exists()
         assert f"## {emb_title}" in emb_index.read_text()
 
 
-def test_embedded_links_respect_max_depth(
-    tmp_path: Path, mocker, dummy_page_with_embedded_links, embedded_page
-):
+def test_embedded_links_respect_max_depth(tmp_path: Path, mocker, dummy_page_with_embedded_links, embedded_page):
     """Test that recursion into embedded links respects the max_depth limit."""
     valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=42"
     page_map = {
