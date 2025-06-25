@@ -93,8 +93,6 @@ This document outlines the step-by-step tasks required to build the MVP of the "
     - Recursion into embedded links must respect the `--max-depth` limit.
     - Avoid redundant downloads and conversions: do not fetch or convert the same page more than once per run.
 - [x] 7.6. Log error messages for any pages that cannot be accessed (due to any errors) instead of raising exceptions. The process should continue converting all accessible pages, skipping those with errors.
-- [ ] 7.7. Implement relative link rewriting. After all pages are converted, iterate through the generated Markdown files and replace Confluence URL links with relative links to the corresponding local files (for both child and embedded pages).
-- [ ] 7.8. Add end-to-end tests for the recursive conversion.
 
 ## Phase 8: Single File Output Option
 
@@ -103,14 +101,27 @@ This document outlines the step-by-step tasks required to build the MVP of the "
     - Insert clear page breaks or headings between each page's content, including the page title and source URL.
     - Ensure this option works with both single-page and recursive conversions.
     - Add tests to verify correct concatenation, ordering, and formatting of the combined Markdown file.
+- [ ] 8.2. Add an option to break the single Markdown file output into sections by recursive depth.
+    - Each section should correspond to a depth level in the page hierarchy.
+    - Insert a clear heading or divider for each depth level.
+    - The least deep pages should be first in the document.
+    - Ensure this works for both single-page and recursive conversions.
+    - Add tests to verify correct sectioning and formatting by depth.
+- [ ] 8.3. Add an option to output each depth level into a separate Markdown file instead of a single file.
+    - Each file should contain all pages at a given depth in the hierarchy.
+    - Name files clearly by depth (e.g., depth_1.md, depth_2.md, etc.).
+    - Ensure this works for both single-page and recursive conversions.
+    - Add tests to verify correct file creation and content by depth.
 
 ## Phase 9: Final Touches
 
-- [ ] 9.1. Implement progress indication for conversions taking longer than 15 seconds (e.g., a simple "Converting page X...")
-- [ ] 9.2. Review all error handling and ensure messages are user-friendly.
-- [ ] 9.3. Update the `README.md` with final usage instructions and examples.
-- [ ] 9.4. Manually test the CLI in a real-world scenario.
-- [ ] 9.5. Add an option to automatically zip all produced Markdown files (single or multiple) into a single archive for easy sharing after conversion is complete.
+- [ ] 9.1. Implement relative link rewriting. After all pages are converted, iterate through the generated Markdown files and replace Confluence URL links with relative links to the corresponding local files (for both child and embedded pages).
+- [ ] 9.2. Add end-to-end tests for the recursive conversion.
+- [ ] 9.3. Implement progress indication for conversions taking longer than 15 seconds (e.g., a simple "Converting page X...")
+- [ ] 9.4. Review all error handling and ensure messages are user-friendly.
+- [ ] 9.5. Update the `README.md` with final usage instructions and examples.
+- [ ] 9.6. Manually test the CLI in a real-world scenario.
+- [ ] 9.7. Add an option to automatically zip all produced Markdown files (single or multiple) into a single archive for easy sharing after conversion is complete.
     - The zip file should include all generated Markdown files and preserve directory structure.
     - Ensure this works for both single-file and multi-file output modes.
     - Add tests to verify correct zipping and archive contents.
