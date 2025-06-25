@@ -76,9 +76,19 @@ This document outlines the step-by-step tasks required to build the MVP of the "
     - Calls `get_child_pages` to find child pages.
     - For each child page, creates a subdirectory named after the parent page's title.
     - Recursively calls itself for each child page, passing the new output path.
-- [ ] 7.3. Implement relative link rewriting. After all pages are converted, iterate through the generated Markdown files and replace Confluence URL links with relative links to the corresponding local files.
-- [ ] 7.4. Add warning messages for pages that cannot be accessed due to permissions, without stopping the entire process.
-- [ ] 7.5. Add end-to-end tests for the recursive conversion.
+    - When recursing to embedded Confluence links, mirror the directory structure of the page where the link was found (do not attempt to mirror the full Confluence hierarchy).
+- [ ] 7.3. Implement a `--max-depth` CLI option (default: 3):
+    - Add a `--max-depth` option to the CLI to limit recursion depth during conversion.
+    - Ensure the default value is 3.
+    - Enforce this limit in both child page and embedded link recursion to prevent extremely large conversions.
+- [ ] 7.4. Implement recursion into embedded Confluence links:
+    - For each page, find any embedded Confluence links within the page content (e.g., links to other Confluence pages embedded in the body).
+    - Recursively convert and save those linked pages as well, using the same output structure as the page where the link was found.
+    - Recursion into embedded links must respect the `--max-depth` limit.
+    - Avoid redundant downloads and conversions: do not fetch or convert the same page more than once per run.
+- [ ] 7.5. Implement relative link rewriting. After all pages are converted, iterate through the generated Markdown files and replace Confluence URL links with relative links to the corresponding local files (for both child and embedded pages).
+- [ ] 7.6. Add warning messages for pages that cannot be accessed due to permissions, without stopping the entire process.
+- [ ] 7.7. Add end-to-end tests for the recursive conversion.
 
 ## Phase 8: Final Touches
 
