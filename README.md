@@ -5,7 +5,7 @@ to make them easier to provide to AI as context.
 
 ### Development
 
-Going to try and use AI to generate all code, artifacts, etc.
+Used copilot to generate all the code and nearly all the commits.
 
 ## Setup
 

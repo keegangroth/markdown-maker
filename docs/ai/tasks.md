@@ -57,15 +57,15 @@ This document outlines the step-by-step tasks required to build the MVP of the "
 
 ## Phase 6: Single-Page Conversion Logic
 
-- [ ] 6.1. In `src/markdown_maker/main.py`, integrate the `ConfluenceClient` and `html_to_markdown` converter into the `convert` command.
-- [ ] 6.2. When the command is run (without `--recursive`):
+- [x] 6.1. In `src/markdown_maker/main.py`, integrate the `ConfluenceClient` and `html_to_markdown` converter into the `convert` command.
+- [x] 6.2. When the command is run (without `--recursive`):
     - Extract `page_id` from the `--url`.
     - Use `ConfluenceClient` to fetch the page content (HTML).
     - Use the converter to transform the HTML to Markdown.
     - Sanitize the page title to create a valid filename (e.g., "My Page" -> `my_page.md`).
     - Save the Markdown content to a file in the specified `--output-dir`.
-- [ ] 6.3. Implement logic to create the output directory if it doesn't exist.
-- [ ] 6.4. Add end-to-end tests for the single-page conversion flow.
+- [x] 6.3. Implement logic to create the output directory if it doesn't exist.
+- [x] 6.4. Add end-to-end tests for the single-page conversion flow.
 
 ## Phase 7: Recursive Conversion Logic
 

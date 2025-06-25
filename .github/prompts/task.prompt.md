@@ -60,21 +60,23 @@ documents.*
       API endpoints).
     * Make the most minimal, focused changes required to complete the task. Do
       not refactor unrelated code.
+    * If no new code is needed state that explicitly and explain why no code
+      changes are needed.
     * Adhere strictly to all rules in `.github/copilot-instructions.md` (PEP 8,
       `ruff` compliance, type hints, Google-style docstrings, etc.).
     * Explain your implementation briefly, noting which files you created or
       modified.
-6.  **Run Tests:** After writing the implementation code, run all tests using
-    the test prompt:
-    #prompt: .github/prompts/test.prompt.md
+6.  **Run Tests and Linting:** After writing the implementation code, run all
+    tests and linting by following the instruction from
+    '.github/prompts/test.prompt.md'.
+8.  **Mark Task as Complete:** Once all testing is passing, you will update
+    the status of the task. To do this, you will output the task line from
+    `docs/ai/tasks.md` with `[x]` in place of `[ ]` at the start of the line.
 7.  **Announce Completion and Await Command:** After you have completed all
     parts of a single task from `docs/ai/tasks.md` (including writing code and
     any required tests), you MUST announce your completion and stop. Your
-    response must be ONLY: "Task [task number] is complete. I will await your
-    command before proceeding." Do not add any other text or analysis.
-8.  **Mark Task as Complete:** Once I approve your work, you will update the
-    status of the task. To do this, you will output the task line from
-    `docs/ai/tasks.md` with `[x]` in place of `[ ]` at the start of the line.
+    response must be ONLY: "Task [task number] is complete." Do not add any
+    other text or analysis.
 9.  **Never Automatically Commit:** You will never automatically commit your
     changes. Instead, you will wait for my confirmation before proceeding with
     any commits.

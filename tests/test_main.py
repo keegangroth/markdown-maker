@@ -7,23 +7,28 @@ from click.testing import CliRunner
 from markdown_maker.main import cli
 
 
-def test_convert_command_prints_options(tmp_path: Path) -> None:
+def test_convert_command_prints_options(tmp_path: Path, mocker) -> None:
     """Tests that the convert command prints the options it receives."""
     runner = CliRunner()
+    valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
+    # Patch ConfluenceClient.get_page_content to avoid real API call
+    mocker.patch(
+        "markdown_maker.clients.confluence_client.ConfluenceClient.get_page_content",
+        return_value={"body": {"storage": {"value": "<h1>Test</h1>"}}},
+    )
     result = runner.invoke(
         cli,
         [
             "convert",
             "--url",
-            "http://example.com",
+            valid_url,
             "--output-dir",
             str(tmp_path),
             "--recursive",
         ],
     )
-
     assert result.exit_code == 0
-    assert "URL: http://example.com" in result.output
+    assert f"URL: {valid_url}" in result.output
     assert f"Output Directory: {tmp_path}" in result.output
     assert "Recursive: True" in result.output
 

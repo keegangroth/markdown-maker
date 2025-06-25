@@ -7,6 +7,7 @@ __pycache__/
 # testing, etc
 .pytest_cache/
 .ruff_cache/
+output/
 
 # Setuptools
 *.egg-info/
