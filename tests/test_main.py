@@ -10,11 +10,20 @@ from markdown_maker.main import cli
 def test_convert_command_prints_options(tmp_path: Path, mocker) -> None:
     """Tests that the convert command prints the options it receives."""
     runner = CliRunner()
-    valid_url = "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
+    valid_url = (
+        "https://company.atlassian.net/wiki/pages/viewpage.action?pageId=123456789"
+    )
     # Patch ConfluenceClient.get_page_content to avoid real API call
     mocker.patch(
         "markdown_maker.clients.confluence_client.ConfluenceClient.get_page_content",
-        return_value={"body": {"storage": {"value": "<h1>Test</h1>"}}},
+        return_value={
+            "body": {"storage": {"value": "<h1>Test</h1>"}},
+            "title": "Test Page",
+        },
+    )
+    mocker.patch(
+        "markdown_maker.main.handle_recursive_conversion",
+        autospec=True,
     )
     result = runner.invoke(
         cli,

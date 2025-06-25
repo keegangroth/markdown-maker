@@ -69,8 +69,8 @@ This document outlines the step-by-step tasks required to build the MVP of the "
 
 ## Phase 7: Recursive Conversion Logic
 
-- [ ] 7.1. In `src/markdown_maker/main.py`, add the logic to handle the `--recursive` flag.
-- [ ] 7.2. Implement a recursive function that:
+- [x] 7.1. In `src/markdown_maker/main.py`, add the logic to handle the `--recursive` flag.
+- [x] 7.2. Implement a recursive function that:
     - Takes a `page_id` and a base output path.
     - Fetches the page, converts it, and saves it.
     - Calls `get_child_pages` to find child pages.
