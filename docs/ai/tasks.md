@@ -119,7 +119,7 @@ This document outlines the step-by-step tasks required to build the MVP of the "
 - [ ] 9.2. Add end-to-end tests for the recursive conversion.
 - [ ] 9.3. Implement progress indication for conversions taking longer than 15 seconds (e.g., a simple "Converting page X...")
 - [ ] 9.4. Review all error handling and ensure messages are user-friendly.
-- [ ] 9.5. Update the `README.md` with final usage instructions and examples.
+- [x] 9.5. Update the `README.md` with final usage instructions and examples.
 - [ ] 9.6. Manually test the CLI in a real-world scenario.
 - [ ] 9.7. Add an option to automatically zip all produced Markdown files (single or multiple) into a single archive for easy sharing after conversion is complete.
     - The zip file should include all generated Markdown files and preserve directory structure.
